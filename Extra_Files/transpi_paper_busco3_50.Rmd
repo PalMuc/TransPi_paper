@@ -1,0 +1,1586 @@
+---
+title: "transpi_paper_busco3_50"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+      message = FALSE,
+      warning = FALSE,
+      out.width="100%")
+```
+
+```{r libraries, include=T}
+# BUSCO plots all kmer sets
+# setwd("~/Desktop/R/ramon/TransPi/paper/")
+library(reshape2)
+library(plotly)
+library(dplyr)
+```
+
+# busco3_50
+
+```{r data, include=T}
+csv=read.csv("busco3_50.csv", header=TRUE)
+```
+
+### All BUSCO (all sets)
+
+```{r busco_allsets, echo=FALSE}
+p <- plot_ly(csv, x=~Category, y=~Score, color=~Program, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "BUSCO genes (all sets)", 
+                  xaxis =list(categoryorder = "array", 
+                  categoryarray = c("Complete", "Single-Copy", "Duplicated","Fragmented","Missing")),
+                  yaxis=list(type = "linear"))
+p
+```
+
+**Complete**
+
+```{r busco_allsets_comp, echo=FALSE}
+writeLines("Complete genes comparison\n")
+comp <- csv %>% filter(Category=="Complete")
+p <- plot_ly(comp, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Complete BUSCO genes (all sets)")
+p
+#stats for busco_allsets (complete)
+comp <- csv %>% filter(Category=="Complete")
+traComp <- comp %>% filter(Program=="Transpi")
+triComp <- comp %>% filter(Program=="Trinity")
+
+#shapiro.test for normality
+straComp=shapiro.test(traComp$Score)
+striComp=shapiro.test(triComp$Score)
+#hist(traComp$Score)
+#hist(triComp$Score)
+if (straComp$p.value > .05 && striComp$p.value > .05) {
+  print("All sets are normally distributed")
+  comp2=data.frame(comp$Program,comp$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(comp$Score ~ comp$Program, data=comp2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  comp2=data.frame(comp$Program,comp$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(comp$Score ~ comp$Program, data=comp2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(comp$Score, comp$Program, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+
+#two way anova
+#comp3=data.frame(comp$Program,comp$Score,comp$Reads)
+#head(comp3)
+#colnames(comp3) <- c("Program","Score","Reads")
+
+#myaov <- aov(Score ~ Program + Reads, data=comp3)
+#myaov
+#summary(myaov)
+# with interaction
+#myaovi <- aov(Score ~ Program + Reads + Program:Reads , data=comp3)
+#myaovi
+#summary(myaovi)
+
+```
+
+**Single**
+
+```{r busco_allsets_sing, echo=FALSE}
+writeLines("Single genes comparison\n")
+sing <- csv %>% filter(Category=="Single-Copy")
+p <- plot_ly(sing, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Single-Copy BUSCO genes (all sets)")
+p
+#stats for busco_allsets (single)
+sing <- csv %>% filter(Category=="Single-Copy")
+traSing <- sing %>% filter(Program=="Transpi")
+triSing <- sing %>% filter(Program=="Trinity")
+
+#shapiro.test for normality
+straSing=shapiro.test(traSing$Score)
+striSing=shapiro.test(triSing$Score)
+#hist(traSing$Score)
+#hist(triSing$Score)
+if (straSing$p.value > .05 && striSing$p.value > .05) {
+  print("All sets are normally distributed")
+  sing2=data.frame(sing$Program,sing$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(sing$Score ~ sing$Program, data=sing2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  sing2=data.frame(sing$Program,sing$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(sing$Score ~ sing$Program, data=sing2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(sing$Score, sing$Program, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Duplicated** 
+
+```{r busco_allsets_dup, echo=FALSE}
+writeLines("Duplicated genes comparison\n")
+dup <- csv %>% filter(Category=="Duplicated")
+p <- plot_ly(dup, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Duplicated BUSCO genes (all sets)")
+p
+#stats for busco_allsets (duplicated)
+dup <- csv %>% filter(Category=="Duplicated")
+traDup <- dup %>% filter(Program=="Transpi")
+triDup <- dup %>% filter(Program=="Trinity")
+
+#shapiro.test for normality
+straDup=shapiro.test(traDup$Score)
+striDup=shapiro.test(triDup$Score)
+#hist(traDup$Score)
+#hist(triDup$Score)
+if (straDup$p.value > .05 && striDup$p.value > .05) {
+  print("All sets are normally distributed")
+  dup2=data.frame(dup$Program,dup$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(dup$Score ~ dup$Program, data=dup2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  dup2=data.frame(dup$Program,dup$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(dup$Score ~ dup$Program, data=dup2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(dup$Score, dup$Program, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Fragmented**
+
+```{r busco_allsets_frag, echo=FALSE}
+writeLines("Fragmented genes comparison\n")
+frag <- csv %>% filter(Category=="Fragmented")
+p <- plot_ly(frag, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Fragmented BUSCO genes (all sets)")
+p
+#stats for busco_allsets (fragmented)
+frag <- csv %>% filter(Category=="Fragmented")
+traFrag <- frag %>% filter(Program=="Transpi")
+triFrag <- frag %>% filter(Program=="Trinity")
+
+#shapiro.test for normality
+straFrag=shapiro.test(traFrag$Score)
+striFrag=shapiro.test(triFrag$Score)
+#hist(traFrag$Score)
+#hist(triFrag$Score)
+if (straFrag$p.value > .05 && striFrag$p.value > .05) {
+  print("All sets are normally distributed")
+  frag2=data.frame(frag$Program,frag$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(frag$Score ~ frag$Program, data=frag2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  frag2=data.frame(frag$Program,frag$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(frag$Score ~ frag$Program, data=frag2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(frag$Score, frag$Program, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Missing**
+
+```{r busco_allsets_mis, echo=FALSE}
+writeLines("Missing genes comparison\n")
+mis <- csv %>% filter(Category=="Missing")
+p <- plot_ly(mis, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Missing BUSCO genes (all sets)")
+p
+#stats for busco_allsets (missing)
+mis <- csv %>% filter(Category=="Missing")
+traMis <- mis %>% filter(Program=="Transpi")
+triMis <- mis %>% filter(Program=="Trinity")
+
+#shapiro.test for normality
+straMis=shapiro.test(traMis$Score)
+striMis=shapiro.test(triMis$Score)
+#hist(traMis$Score)
+#hist(triMis$Score)
+if (straMis$p.value > .05 && striMis$p.value > .05) {
+  print("All sets are normally distributed")
+  mis2=data.frame(mis$Program,mis$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(mis$Score ~ mis$Program, data=mis2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  mis2=data.frame(mis$Program,mis$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(mis$Score ~ mis$Program, data=mis2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(mis$Score, mis$Program, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+<br><br><br>
+<div class="rectangle"></div>
+
+### All BUSCO (kmer test)
+
+```{r busco_allsets_kmers, echo=FALSE}
+p <- plot_ly(csv, x=~Category, y=~Score, color=~Kmer, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "BUSCO genes (all sets)", 
+                  xaxis =list(categoryorder = "array", 
+                  categoryarray = c("Complete", "Single-Copy", "Duplicated","Fragmented","Missing")),
+                  yaxis=list(type = "linear"))
+p
+
+```
+
+**Only TransPi**
+
+```{r busco_allsets_kmers_transpi, echo=FALSE}
+csv2 <- csv %>% filter(Program=="Transpi")
+p <- plot_ly(csv2, x=~Category, y=~Score, color=~Kmer, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "BUSCO genes (all sets)",
+                  xaxis =list(categoryorder = "array", 
+                  categoryarray = c("Complete", "Single-Copy", "Duplicated","Fragmented","Missing")),
+                  yaxis=list(type = "linear", range=c(0,101), dtick=10))
+p
+```
+
+**Complete**   
+
+```{r busco_allsets_kmers_comp, echo=FALSE}
+writeLines("Complete genes comparison\n")
+comp <- csv %>% filter(Category=="Complete")
+p <- plot_ly(comp, x=~Program, y=~Score, color=~Kmer, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Complete BUSCO genes (all sets)", yaxis=list(range = c(0,101)))
+p
+comp <- csv %>% filter(Category=="Complete")
+compTra<- comp %>% filter(Program=="Transpi")
+ka <- compTra %>% filter(Kmer=="KmerA")
+kb <- compTra %>% filter(Kmer=="KmerB")
+kc <- compTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+ska=shapiro.test(ka$Score)
+skb=shapiro.test(kb$Score)
+skc=shapiro.test(kc$Score)
+#hist(ka$Score)
+#hist(kb$Score)
+#hist(kc$Score)
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  compTra2=data.frame(compTra$Kmer,compTra$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(compTra$Score ~ compTra$Kmer, data=compTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  compTra2=data.frame(compTra$Kmer,compTra$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(compTra$Score ~ compTra$Kmer, data=compTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(compTra$Score, compTra$Kmer, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+
+# stdev
+#sapply(ka, sd, na.rm=TRUE)
+# variance
+#sapply(ka, var, na.rm=TRUE)
+#summary(ka$Score)
+#ka
+#stdev
+#sd(ka$Score, na.rm=TRUE)
+
+#correlation
+#cor(ka$Score,kb$Score)
+#covariance
+#cov(ka$Score,kb$Score)
+```
+
+**Single**
+
+```{r busco_allsets_kmers_sing, echo=FALSE}
+writeLines("Single genes comparison\n")
+sing <- csv %>% filter(Category=="Single-Copy")
+p <- plot_ly(sing, x=~Program, y=~Score, color=~Kmer, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Single-Copy BUSCO genes (all sets)", yaxis=list(range = c(0,101)))
+p
+sing <- csv %>% filter(Category=="Single-Copy")
+singTra<- sing %>% filter(Program=="Transpi")
+ka <- singTra %>% filter(Kmer=="KmerA")
+kb <- singTra %>% filter(Kmer=="KmerB")
+kc <- singTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+ska=shapiro.test(ka$Score)
+skb=shapiro.test(kb$Score)
+skc=shapiro.test(kc$Score)
+#hist(ka$Score)
+#hist(kb$Score)
+#hist(kc$Score)
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  singTra2=data.frame(singTra$Kmer,singTra$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(singTra$Score ~ singTra$Kmer, data=singTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  singTra2=data.frame(singTra$Kmer,singTra$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(singTra$Score ~ singTra$Kmer, data=singTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(singTra$Score, singTra$Kmer, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Duplicated**
+
+```{r busco_allsets_kmers_dup, echo=FALSE}
+writeLines("Duplicated genes comparison\n")
+dup <- csv %>% filter(Category=="Duplicated")
+p <- plot_ly(dup, x=~Program, y=~Score, color=~Kmer, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Duplicated BUSCO genes (all sets)", yaxis=list(range = c(0,101)))
+p
+dup <- csv %>% filter(Category=="Duplicated")
+dupTra<- dup %>% filter(Program=="Transpi")
+ka <- dupTra %>% filter(Kmer=="KmerA")
+kb <- dupTra %>% filter(Kmer=="KmerB")
+kc <- dupTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+ska=shapiro.test(ka$Score)
+skb=shapiro.test(kb$Score)
+skc=shapiro.test(kc$Score)
+#hist(ka$Score)
+#hist(kb$Score)
+#hist(kc$Score)
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  dupTra2=data.frame(dupTra$Kmer,dupTra$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(dupTra$Score ~ dupTra$Kmer, data=dupTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  dupTra2=data.frame(dupTra$Kmer,dupTra$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(dupTra$Score ~ dupTra$Kmer, data=dupTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(dupTra$Score, dupTra$Kmer, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Fragmented**
+
+```{r busco_allsets_kmers_frag, echo=FALSE}
+writeLines("Fragmented genes comparison\n")
+frag <- csv %>% filter(Category=="Fragmented")
+p <- plot_ly(frag, x=~Program, y=~Score, color=~Kmer, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Fragmented BUSCO genes (all sets)", yaxis=list(range = c(0,21)))
+p
+frag <- csv %>% filter(Category=="Fragmented")
+fragTra<- frag %>% filter(Program=="Transpi")
+ka <- fragTra %>% filter(Kmer=="KmerA")
+kb <- fragTra %>% filter(Kmer=="KmerB")
+kc <- fragTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+ska=shapiro.test(ka$Score)
+skb=shapiro.test(kb$Score)
+skc=shapiro.test(kc$Score)
+#hist(ka$Score)
+#hist(kb$Score)
+#hist(kc$Score)
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  fragTra2=data.frame(fragTra$Kmer,fragTra$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(fragTra$Score ~ fragTra$Kmer, data=fragTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  fragTra2=data.frame(fragTra$Kmer,fragTra$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(fragTra$Score ~ fragTra$Kmer, data=fragTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(fragTra$Score, fragTra$Kmer, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Missing**
+
+```{r busco_allsets_kmers_mis, echo=FALSE}
+writeLines("Missing genes comparison\n")
+mis <- csv %>% filter(Category=="Missing")
+p <- plot_ly(mis, x=~Program, y=~Score, color=~Kmer, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Missing BUSCO genes (all sets)", yaxis=list(range = c(0,101)))
+p
+mis <- csv %>% filter(Category=="Missing")
+misTra<- mis %>% filter(Program=="Transpi")
+ka <- misTra %>% filter(Kmer=="KmerA")
+kb <- misTra %>% filter(Kmer=="KmerB")
+kc <- misTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+ska=shapiro.test(ka$Score)
+skb=shapiro.test(kb$Score)
+skc=shapiro.test(kc$Score)
+#hist(ka$Score)
+#hist(kb$Score)
+#hist(kc$Score)
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  misTra2=data.frame(misTra$Kmer,misTra$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(misTra$Score ~ misTra$Kmer, data=misTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  misTra2=data.frame(misTra$Kmer,misTra$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(misTra$Score ~ misTra$Kmer, data=misTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(misTra$Score, misTra$Kmer, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+<br><br><br>
+<div class="rectangle"></div>
+
+### By species (all sets)
+
+```{r busco_allsets_byspecies, echo=FALSE}
+all <-data.frame(lapply(csv, function(x) {gsub("MM[0-9]", "MM", x)}))
+all <-data.frame(lapply(all, function(x) {gsub("CE[0-9]", "CE", x)}))
+all <-data.frame(lapply(all, function(x) {gsub("DM[0-9]", "DM", x)}))
+
+busco <- all %>% filter(Category=="Complete")
+p <- plot_ly(busco, x=~Program, y=~Score, color=~Sample, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Complete BUSCO genes (all sets)", 
+                  yaxis=list(type = "linear", range = c(29,101)))
+p
+
+busco <- all %>% filter(Category=="Single-Copy")
+p <- plot_ly(busco, x=~Program, y=~Score, color=~Sample, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Single-Copy BUSCO genes (all sets)",
+                  yaxis=list(type = "linear", range = c(19,101)))
+p
+
+busco <- all %>% filter(Category=="Duplicated")
+p <- plot_ly(busco, x=~Program, y=~Score, color=~Sample, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Duplicated BUSCO genes (all sets)",
+                  yaxis=list(type = "linear", range = c(0,101)))
+p
+
+busco <- all %>% filter(Category=="Fragmented")
+p <- plot_ly(busco, x=~Program, y=~Score, color=~Sample, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Fragmented BUSCO genes (all sets)",
+                  yaxis=list(type = "linear", range = c(0,31)))
+p
+
+busco <- all %>% filter(Category=="Missing")
+p <- plot_ly(busco, x=~Program, y=~Score, color=~Sample, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Missing BUSCO genes (all sets)",
+                  yaxis=list(type = "linear", range = c(0,71)))
+p
+
+```
+
+<br><br><br>
+
+<div class="rectangle"></div>
+
+### By species (kmer test)
+
+#### CE
+
+```{r busco_kmers_CE, echo=FALSE}
+all <- data.frame(lapply(csv, function(x) {gsub("CE[0-9]", "CE", x)}))
+samp <- all %>% filter(Sample=="CE")
+sampTra<- samp %>% filter(Program=="Transpi")
+sampTra1<- sampTra %>% filter(Kmer=="KmerA")
+sampTra2<- sampTra %>% filter(Kmer=="KmerB")
+sampTra3<- sampTra %>% filter(Kmer=="KmerC")
+
+p <- plot_ly(sampTra1, x=~Category, y=~Score, type="box", boxmean='sd', name="Kmer set A", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(y=sampTra2$Score, name="Kmer set B", fillcolor='rgba(22, 84, 138,.4)', marker=list(color='rgba(22, 84, 138,.4)'), 
+                     line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% add_trace(y=sampTra3$Score, name="Kmer set C", fillcolor='rgba(3, 43, 76,.4)', marker=list(color='rgba(3, 43, 76,.4)'), 
+                     line=list(color='rgba(3, 43, 76,.65)'))
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "CE BUSCO genes (kmer test, 50bp)", 
+                  xaxis =list(categoryorder = "array", 
+                  categoryarray = c("Complete", "Single-Copy", "Duplicated","Fragmented","Missing")),
+                  yaxis=list(title="BUSCO %", type = "linear", range=c(0,101), dtick=10), font=list(size=15))
+p
+
+orca(p,"50_CE.svg")
+```
+
+**Complete**
+
+```{r busco_kmers_CE_comp, echo=FALSE}
+writeLines("Complete genes comparison\n")
+all <- data.frame(lapply(csv, function(x) {gsub("CE[0-9]", "CE", x)}))
+ce <- all %>% filter(Sample=="CE")
+ceTra<- ce %>% filter(Category=="Complete")
+
+p <- plot_ly(ceTra, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Complete BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+ka <- ceTra %>% filter(Kmer=="KmerA")
+kb <- ceTra %>% filter(Kmer=="KmerB")
+kc <- ceTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+#droplevels(ka)
+ska=shapiro.test(as.numeric(as.character(ka$Score)))
+skb=shapiro.test(as.numeric(as.character(kb$Score)))
+skc=shapiro.test(as.numeric(as.character(kc$Score)))
+#hist(as.numeric(as.character(ka$Score)))
+#hist(as.numeric(as.character(kb$Score)))
+#hist(as.numeric(as.character(kc$Score)))
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  ceTra2=data.frame(ceTra$Kmer,as.numeric(as.character(ceTra$Score)))
+  colnames(ceTra2)=c("Kmer","Score")
+  #one way ANOVA - significant p <.05
+  myaov <- aov(Score ~ Kmer, data=ceTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  ceTra2=data.frame(ceTra$Kmer,as.numeric(as.character(ceTra$Score)))
+  colnames(ceTra2)=c("Kmer","Score")
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(Score ~ Kmer, data=ceTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(ceTra2$Score, ceTra2$Kmer, p.adjust.method = "BH") 
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Single**
+
+```{r busco_kmers_CE_sing, echo=FALSE}
+writeLines("Single genes comparison\n")
+all <- data.frame(lapply(csv, function(x) {gsub("CE[0-9]", "CE", x)}))
+ce <- all %>% filter(Sample=="CE")
+ceTra<- ce %>% filter(Category=="Single-Copy")
+
+p <- plot_ly(ceTra, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Single BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+ka <- ceTra %>% filter(Kmer=="KmerA")
+kb <- ceTra %>% filter(Kmer=="KmerB")
+kc <- ceTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+#droplevels(ka)
+ska=shapiro.test(as.numeric(as.character(ka$Score)))
+skb=shapiro.test(as.numeric(as.character(kb$Score)))
+skc=shapiro.test(as.numeric(as.character(kc$Score)))
+#hist(as.numeric(as.character(ka$Score)))
+#hist(as.numeric(as.character(kb$Score)))
+#hist(as.numeric(as.character(kc$Score)))
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  ceTra2=data.frame(ceTra$Kmer,as.numeric(as.character(ceTra$Score)))
+  colnames(ceTra2)=c("Kmer","Score")
+  #one way ANOVA - significant p <.05
+  myaov <- aov(Score ~ Kmer, data=ceTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  ceTra2=data.frame(ceTra$Kmer,as.numeric(as.character(ceTra$Score)))
+  colnames(ceTra2)=c("Kmer","Score")
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(Score ~ Kmer, data=ceTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(ceTra2$Score, ceTra2$Kmer, p.adjust.method = "BH") 
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Duplicated**
+
+```{r busco_kmers_CE_dup, echo=FALSE}
+writeLines("Duplicated genes comparison\n")
+all <- data.frame(lapply(csv, function(x) {gsub("CE[0-9]", "CE", x)}))
+ce <- all %>% filter(Sample=="CE")
+ceTra<- ce %>% filter(Category=="Duplicated")
+
+p <- plot_ly(ceTra, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Duplicated BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+ka <- ceTra %>% filter(Kmer=="KmerA")
+kb <- ceTra %>% filter(Kmer=="KmerB")
+kc <- ceTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+#droplevels(ka)
+ska=shapiro.test(as.numeric(as.character(ka$Score)))
+skb=shapiro.test(as.numeric(as.character(kb$Score)))
+skc=shapiro.test(as.numeric(as.character(kc$Score)))
+#hist(as.numeric(as.character(ka$Score)))
+#hist(as.numeric(as.character(kb$Score)))
+#hist(as.numeric(as.character(kc$Score)))
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  ceTra2=data.frame(ceTra$Kmer,as.numeric(as.character(ceTra$Score)))
+  colnames(ceTra2)=c("Kmer","Score")
+  #one way ANOVA - significant p <.05
+  myaov <- aov(Score ~ Kmer, data=ceTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  ceTra2=data.frame(ceTra$Kmer,as.numeric(as.character(ceTra$Score)))
+  colnames(ceTra2)=c("Kmer","Score")
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(Score ~ Kmer, data=ceTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(ceTra2$Score, ceTra2$Kmer, p.adjust.method = "BH") 
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Fragmented**
+
+```{r busco_kmers_CE_frag, echo=FALSE}
+writeLines("Fragmented genes comparison\n")
+all <- data.frame(lapply(csv, function(x) {gsub("CE[0-9]", "CE", x)}))
+ce <- all %>% filter(Sample=="CE")
+ceTra<- ce %>% filter(Category=="Fragmented")
+
+p <- plot_ly(ceTra, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Fragmented BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+ka <- ceTra %>% filter(Kmer=="KmerA")
+kb <- ceTra %>% filter(Kmer=="KmerB")
+kc <- ceTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+#droplevels(ka)
+ska=shapiro.test(as.numeric(as.character(ka$Score)))
+skb=shapiro.test(as.numeric(as.character(kb$Score)))
+skc=shapiro.test(as.numeric(as.character(kc$Score)))
+#hist(as.numeric(as.character(ka$Score)))
+#hist(as.numeric(as.character(kb$Score)))
+#hist(as.numeric(as.character(kc$Score)))
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  ceTra2=data.frame(ceTra$Kmer,as.numeric(as.character(ceTra$Score)))
+  colnames(ceTra2)=c("Kmer","Score")
+  #one way ANOVA - significant p <.05
+  myaov <- aov(Score ~ Kmer, data=ceTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  ceTra2=data.frame(ceTra$Kmer,as.numeric(as.character(ceTra$Score)))
+  colnames(ceTra2)=c("Kmer","Score")
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(Score ~ Kmer, data=ceTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(ceTra2$Score, ceTra2$Kmer, p.adjust.method = "BH") 
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Missing**
+
+```{r busco_kmers_CE_mis, echo=FALSE}
+writeLines("Fragmented genes comparison\n")
+all <- data.frame(lapply(csv, function(x) {gsub("CE[0-9]", "CE", x)}))
+ce <- all %>% filter(Sample=="CE")
+ceTra<- ce %>% filter(Category=="Missing")
+
+p <- plot_ly(ceTra, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Missing BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+ka <- ceTra %>% filter(Kmer=="KmerA")
+kb <- ceTra %>% filter(Kmer=="KmerB")
+kc <- ceTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+#droplevels(ka)
+ska=shapiro.test(as.numeric(as.character(ka$Score)))
+skb=shapiro.test(as.numeric(as.character(kb$Score)))
+skc=shapiro.test(as.numeric(as.character(kc$Score)))
+#hist(as.numeric(as.character(ka$Score)))
+#hist(as.numeric(as.character(kb$Score)))
+#hist(as.numeric(as.character(kc$Score)))
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  ceTra2=data.frame(ceTra$Kmer,as.numeric(as.character(ceTra$Score)))
+  colnames(ceTra2)=c("Kmer","Score")
+  #one way ANOVA - significant p <.05
+  myaov <- aov(Score ~ Kmer, data=ceTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  ceTra2=data.frame(ceTra$Kmer,as.numeric(as.character(ceTra$Score)))
+  colnames(ceTra2)=c("Kmer","Score")
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(Score ~ Kmer, data=ceTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(ceTra2$Score, ceTra2$Kmer, p.adjust.method = "BH") 
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**BUSCO and reads**
+
+```{r busco_reads_CE, echo=FALSE}
+comp <- csv %>% filter(grepl("CE[0-9]", Sample))
+comp4=data.frame(comp$Program, comp$Category, comp$Score, comp$Reads, comp$Sample)
+head(comp4)
+colnames(comp4) <- c("Program", "Category", "Score","Reads","Sample")
+c0a <- comp4 %>% filter(Program=="Transpi")
+c1a <- c0a %>% filter(Category=="Complete")
+c2a <- c0a %>% filter(Category=="Single-Copy")
+c3a <- c0a %>% filter(Category=="Duplicated")
+c0b <- comp4 %>% filter(Program=="Trinity")
+c1b <- c0b %>% filter(Category=="Complete")
+c2b <- c0b %>% filter(Category=="Single-Copy")
+c3b <- c0b %>% filter(Category=="Duplicated")
+c4 <- data.frame(c1a$Reads, c1a$Score, c2a$Score, c3a$Score, c1b$Score, c2b$Score, c3b$Score)
+colnames(c4) <- c("Reads","CompleteA","SingleA","DuplicatedA", "CompleteB","SingleB","DuplicatedB")
+
+p <- plot_ly(c4, x=~Reads, y=~CompleteA, type="box", boxmean='sd', name="Complete-TransPi")
+p <- p %>% add_boxplot(x=~Reads, y=~CompleteB, type="box", boxmean='sd', name="Complete-Trinity")
+p <- p %>% add_boxplot(x=~Reads, y=~SingleA, type="box", boxmean='sd', name="Single-TransPi")
+p <- p %>% add_boxplot(x=~Reads, y=~SingleB, type="box", boxmean='sd', name="Single-Trinity")
+p <- p %>% add_boxplot(x=~Reads, y=~DuplicatedA, type="box", boxmean='sd', name="Duplicated-TransPi")
+p <- p %>% add_boxplot(x=~Reads, y=~DuplicatedB, type="box", boxmean='sd', name="Duplicated-Trinity")
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), xaxis=list(type = "linear"), yaxis=list(title="BUSCO %"))
+p
+```
+
+#### DM
+
+```{r busco_kmers_DM, echo=FALSE}
+all <- data.frame(lapply(csv, function(x) {gsub("DM[0-9]", "DM", x)}))
+samp <- all %>% filter(Sample=="DM")
+sampTra<- samp %>% filter(Program=="Transpi")
+sampTra1<- sampTra %>% filter(Kmer=="KmerA")
+sampTra2<- sampTra %>% filter(Kmer=="KmerB")
+sampTra3<- sampTra %>% filter(Kmer=="KmerC")
+
+p <- plot_ly(sampTra1, x=~Category, y=~Score, type="box", boxmean='sd', name="Kmer set A", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(y=sampTra2$Score, name="Kmer set B", fillcolor='rgba(22, 84, 138,.4)', marker=list(color='rgba(22, 84, 138,.4)'), 
+                     line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% add_trace(y=sampTra3$Score, name="Kmer set C", fillcolor='rgba(3, 43, 76,.4)', marker=list(color='rgba(3, 43, 76,.4)'), 
+                     line=list(color='rgba(3, 43, 76,.65)'))
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "DM BUSCO genes (kmer test, 50bp)", 
+                  xaxis =list(categoryorder = "array", 
+                  categoryarray = c("Complete", "Single-Copy", "Duplicated","Fragmented","Missing")),
+                  yaxis=list(title="BUSCO %", type = "linear", range=c(0,101), dtick=10))
+p
+
+orca(p,"50_DM.svg")
+```
+
+**Complete**
+
+```{r busco_kmers_DM_comp, echo=FALSE}
+writeLines("Complete genes comparison\n")
+all <- data.frame(lapply(csv, function(x) {gsub("DM[0-9]", "DM", x)}))
+dm <- all %>% filter(Sample=="DM")
+dmTra<- dm %>% filter(Category=="Complete")
+
+p <- plot_ly(dmTra, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Complete BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+ka <- dmTra %>% filter(Kmer=="KmerA")
+kb <- dmTra %>% filter(Kmer=="KmerB")
+kc <- dmTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+#droplevels(ka)
+ska=shapiro.test(as.numeric(as.character(ka$Score)))
+skb=shapiro.test(as.numeric(as.character(kb$Score)))
+skc=shapiro.test(as.numeric(as.character(kc$Score)))
+#hist(as.numeric(as.character(ka$Score)))
+#hist(as.numeric(as.character(kb$Score)))
+#hist(as.numeric(as.character(kc$Score)))
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  dmTra2=data.frame(dmTra$Kmer,as.numeric(as.character(dmTra$Score)))
+  colnames(dmTra2)=c("Kmer","Score")
+  #one way ANOVA - significant p <.05
+  myaov <- aov(Score ~ Kmer, data=dmTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  dmTra2=data.frame(dmTra$Kmer,as.numeric(as.character(dmTra$Score)))
+  colnames(dmTra2)=c("Kmer","Score")
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(Score ~ Kmer, data=dmTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(dmTra2$Score, dmTra2$Kmer, p.adjust.method = "BH") 
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Single**
+
+```{r busco_kmers_DM_sing, echo=FALSE}
+writeLines("Single genes comparison\n")
+all <- data.frame(lapply(csv, function(x) {gsub("DM[0-9]", "DM", x)}))
+dm <- all %>% filter(Sample=="DM")
+dmTra<- dm %>% filter(Category=="Single-Copy")
+
+p <- plot_ly(dmTra, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Single BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+ka <- dmTra %>% filter(Kmer=="KmerA")
+kb <- dmTra %>% filter(Kmer=="KmerB")
+kc <- dmTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+#droplevels(ka)
+ska=shapiro.test(as.numeric(as.character(ka$Score)))
+skb=shapiro.test(as.numeric(as.character(kb$Score)))
+skc=shapiro.test(as.numeric(as.character(kc$Score)))
+#hist(as.numeric(as.character(ka$Score)))
+#hist(as.numeric(as.character(kb$Score)))
+#hist(as.numeric(as.character(kc$Score)))
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  dmTra2=data.frame(dmTra$Kmer,as.numeric(as.character(dmTra$Score)))
+  colnames(dmTra2)=c("Kmer","Score")
+  #one way ANOVA - significant p <.05
+  myaov <- aov(Score ~ Kmer, data=dmTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  dmTra2=data.frame(dmTra$Kmer,as.numeric(as.character(dmTra$Score)))
+  colnames(dmTra2)=c("Kmer","Score")
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(Score ~ Kmer, data=dmTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(dmTra2$Score, dmTra2$Kmer, p.adjust.method = "BH") 
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Duplicated**
+
+```{r busco_kmers_DM_dup, echo=FALSE}
+writeLines("Duplicated genes comparison\n")
+all <- data.frame(lapply(csv, function(x) {gsub("DM[0-9]", "DM", x)}))
+dm <- all %>% filter(Sample=="DM")
+dmTra<- dm %>% filter(Category=="Duplicated")
+
+p <- plot_ly(dmTra, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Duplicated BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+ka <- dmTra %>% filter(Kmer=="KmerA")
+kb <- dmTra %>% filter(Kmer=="KmerB")
+kc <- dmTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+#droplevels(ka)
+ska=shapiro.test(as.numeric(as.character(ka$Score)))
+skb=shapiro.test(as.numeric(as.character(kb$Score)))
+skc=shapiro.test(as.numeric(as.character(kc$Score)))
+#hist(as.numeric(as.character(ka$Score)))
+#hist(as.numeric(as.character(kb$Score)))
+#hist(as.numeric(as.character(kc$Score)))
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  dmTra2=data.frame(dmTra$Kmer,as.numeric(as.character(dmTra$Score)))
+  colnames(dmTra2)=c("Kmer","Score")
+  #one way ANOVA - significant p <.05
+  myaov <- aov(Score ~ Kmer, data=dmTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  dmTra2=data.frame(dmTra$Kmer,as.numeric(as.character(dmTra$Score)))
+  colnames(dmTra2)=c("Kmer","Score")
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(Score ~ Kmer, data=dmTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(dmTra2$Score, dmTra2$Kmer, p.adjust.method = "BH") 
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Fragmented**
+
+```{r busco_kmers_DM_frag, echo=FALSE}
+writeLines("Fragmented genes comparison\n")
+all <- data.frame(lapply(csv, function(x) {gsub("DM[0-9]", "DM", x)}))
+dm <- all %>% filter(Sample=="DM")
+dmTra<- dm %>% filter(Category=="Fragmented")
+
+p <- plot_ly(dmTra, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Fragmented BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+ka <- dmTra %>% filter(Kmer=="KmerA")
+kb <- dmTra %>% filter(Kmer=="KmerB")
+kc <- dmTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+#droplevels(ka)
+ska=shapiro.test(as.numeric(as.character(ka$Score)))
+skb=shapiro.test(as.numeric(as.character(kb$Score)))
+skc=shapiro.test(as.numeric(as.character(kc$Score)))
+#hist(as.numeric(as.character(ka$Score)))
+#hist(as.numeric(as.character(kb$Score)))
+#hist(as.numeric(as.character(kc$Score)))
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  dmTra2=data.frame(dmTra$Kmer,as.numeric(as.character(dmTra$Score)))
+  colnames(dmTra2)=c("Kmer","Score")
+  #one way ANOVA - significant p <.05
+  myaov <- aov(Score ~ Kmer, data=dmTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  dmTra2=data.frame(dmTra$Kmer,as.numeric(as.character(dmTra$Score)))
+  colnames(dmTra2)=c("Kmer","Score")
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(Score ~ Kmer, data=dmTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(dmTra2$Score, dmTra2$Kmer, p.adjust.method = "BH") 
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Missing**
+
+```{r busco_kmers_DM_mis, echo=FALSE}
+writeLines("Missing genes comparison\n")
+all <- data.frame(lapply(csv, function(x) {gsub("DM[0-9]", "DM", x)}))
+dm <- all %>% filter(Sample=="DM")
+dmTra<- dm %>% filter(Category=="Missing")
+
+p <- plot_ly(dmTra, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Missing BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+ka <- dmTra %>% filter(Kmer=="KmerA")
+kb <- dmTra %>% filter(Kmer=="KmerB")
+kc <- dmTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+#droplevels(ka)
+ska=shapiro.test(as.numeric(as.character(ka$Score)))
+skb=shapiro.test(as.numeric(as.character(kb$Score)))
+skc=shapiro.test(as.numeric(as.character(kc$Score)))
+#hist(as.numeric(as.character(ka$Score)))
+#hist(as.numeric(as.character(kb$Score)))
+#hist(as.numeric(as.character(kc$Score)))
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  dmTra2=data.frame(dmTra$Kmer,as.numeric(as.character(dmTra$Score)))
+  colnames(dmTra2)=c("Kmer","Score")
+  #one way ANOVA - significant p <.05
+  myaov <- aov(Score ~ Kmer, data=dmTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  dmTra2=data.frame(dmTra$Kmer,as.numeric(as.character(dmTra$Score)))
+  colnames(dmTra2)=c("Kmer","Score")
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(Score ~ Kmer, data=dmTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(dmTra2$Score, dmTra2$Kmer, p.adjust.method = "BH") 
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**BUSCO and reads**
+
+```{r busco_reads_DM, echo=FALSE}
+comp <- csv %>% filter(grepl("DM[0-9]", Sample))
+comp4=data.frame(comp$Program, comp$Category, comp$Score, comp$Reads, comp$Sample)
+head(comp4)
+colnames(comp4) <- c("Program", "Category", "Score","Reads","Sample")
+c0a <- comp4 %>% filter(Program=="Transpi")
+c1a <- c0a %>% filter(Category=="Complete")
+c2a <- c0a %>% filter(Category=="Single-Copy")
+c3a <- c0a %>% filter(Category=="Duplicated")
+c0b <- comp4 %>% filter(Program=="Trinity")
+c1b <- c0b %>% filter(Category=="Complete")
+c2b <- c0b %>% filter(Category=="Single-Copy")
+c3b <- c0b %>% filter(Category=="Duplicated")
+c4 <- data.frame(c1a$Reads, c1a$Score, c2a$Score, c3a$Score, c1b$Score, c2b$Score, c3b$Score)
+colnames(c4) <- c("Reads","CompleteA","SingleA","DuplicatedA", "CompleteB","SingleB","DuplicatedB")
+
+p <- plot_ly(c4, x=~Reads, y=~CompleteA, type="box", boxmean='sd', name="Complete-TransPi")
+p <- p %>% add_boxplot(x=~Reads, y=~CompleteB, type="box", boxmean='sd', name="Complete-Trinity")
+p <- p %>% add_boxplot(x=~Reads, y=~SingleA, type="box", boxmean='sd', name="Single-TransPi")
+p <- p %>% add_boxplot(x=~Reads, y=~SingleB, type="box", boxmean='sd', name="Single-Trinity")
+p <- p %>% add_boxplot(x=~Reads, y=~DuplicatedA, type="box", boxmean='sd', name="Duplicated-TransPi")
+p <- p %>% add_boxplot(x=~Reads, y=~DuplicatedB, type="box", boxmean='sd', name="Duplicated-Trinity")
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), xaxis=list(type = "linear"), yaxis=list(title="BUSCO %"))
+p
+```
+
+#### MM
+
+```{r busco_kmers_MM, echo=FALSE}
+all <- data.frame(lapply(csv, function(x) {gsub("MM[0-9]", "MM", x)}))
+samp <- all %>% filter(Sample=="MM")
+sampTra<- samp %>% filter(Program=="Transpi")
+sampTra1<- sampTra %>% filter(Kmer=="KmerA")
+sampTra2<- sampTra %>% filter(Kmer=="KmerB")
+sampTra3<- sampTra %>% filter(Kmer=="KmerC")
+
+p <- plot_ly(sampTra1, x=~Category, y=~Score, type="box", boxmean='sd', name="Kmer set A", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(y=sampTra2$Score, name="Kmer set B", fillcolor='rgba(22, 84, 138,.4)', marker=list(color='rgba(22, 84, 138,.4)'), 
+                     line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% add_trace(y=sampTra3$Score, name="Kmer set C", fillcolor='rgba(3, 43, 76,.4)', marker=list(color='rgba(3, 43, 76,.4)'), 
+                     line=list(color='rgba(3, 43, 76,.65)'))
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "MM BUSCO genes (kmer test, 50bp)", 
+                  xaxis =list(categoryorder = "array", 
+                  categoryarray = c("Complete", "Single-Copy", "Duplicated","Fragmented","Missing")),
+                  yaxis=list(title="BUSCO %", type = "linear", range=c(0,101), dtick=10))
+p
+
+orca(p,"50_MM.svg")
+```
+
+**Complete**
+
+```{r busco_kmers_MM_comp, echo=FALSE}
+writeLines("Complete genes comparison\n")
+all <- data.frame(lapply(csv, function(x) {gsub("MM[0-9]", "MM", x)}))
+mm <- all %>% filter(Sample=="MM")
+mmTra<- mm %>% filter(Category=="Complete")
+
+p <- plot_ly(mmTra, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Complete BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+ka <- mmTra %>% filter(Kmer=="KmerA")
+kb <- mmTra %>% filter(Kmer=="KmerB")
+kc <- mmTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+#droplevels(ka)
+ska=shapiro.test(as.numeric(as.character(ka$Score)))
+skb=shapiro.test(as.numeric(as.character(kb$Score)))
+skc=shapiro.test(as.numeric(as.character(kc$Score)))
+#hist(as.numeric(as.character(ka$Score)))
+#hist(as.numeric(as.character(kb$Score)))
+#hist(as.numeric(as.character(kc$Score)))
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  mmTra2=data.frame(mmTra$Kmer,as.numeric(as.character(mmTra$Score)))
+  colnames(mmTra2)=c("Kmer","Score")
+  #one way ANOVA - significant p <.05
+  myaov <- aov(Score ~ Kmer, data=mmTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  mmTra2=data.frame(mmTra$Kmer,as.numeric(as.character(mmTra$Score)))
+  colnames(mmTra2)=c("Kmer","Score")
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(Score ~ Kmer, data=mmTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(mmTra2$Score, mmTra2$Kmer, p.adjust.method = "BH") 
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Single**
+
+```{r busco_kmers_MM_sing, echo=FALSE}
+writeLines("Single genes comparison\n")
+all <- data.frame(lapply(csv, function(x) {gsub("MM[0-9]", "MM", x)}))
+mm <- all %>% filter(Sample=="MM")
+mmTra<- mm %>% filter(Category=="Single-Copy")
+
+p <- plot_ly(mmTra, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Single BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+ka <- mmTra %>% filter(Kmer=="KmerA")
+kb <- mmTra %>% filter(Kmer=="KmerB")
+kc <- mmTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+#droplevels(ka)
+ska=shapiro.test(as.numeric(as.character(ka$Score)))
+skb=shapiro.test(as.numeric(as.character(kb$Score)))
+skc=shapiro.test(as.numeric(as.character(kc$Score)))
+#hist(as.numeric(as.character(ka$Score)))
+#hist(as.numeric(as.character(kb$Score)))
+#hist(as.numeric(as.character(kc$Score)))
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  mmTra2=data.frame(mmTra$Kmer,as.numeric(as.character(mmTra$Score)))
+  colnames(mmTra2)=c("Kmer","Score")
+  #one way ANOVA - significant p <.05
+  myaov <- aov(Score ~ Kmer, data=mmTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  mmTra2=data.frame(mmTra$Kmer,as.numeric(as.character(mmTra$Score)))
+  colnames(mmTra2)=c("Kmer","Score")
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(Score ~ Kmer, data=mmTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(mmTra2$Score, mmTra2$Kmer, p.adjust.method = "BH") 
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Duplicated**
+
+```{r busco_kmers_MM_dup, echo=FALSE}
+writeLines("Duplicated genes comparison\n")
+all <- data.frame(lapply(csv, function(x) {gsub("MM[0-9]", "MM", x)}))
+mm <- all %>% filter(Sample=="MM")
+mmTra<- mm %>% filter(Category=="Duplicated")
+
+p <- plot_ly(mmTra, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Duplicated BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+ka <- mmTra %>% filter(Kmer=="KmerA")
+kb <- mmTra %>% filter(Kmer=="KmerB")
+kc <- mmTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+#droplevels(ka)
+ska=shapiro.test(as.numeric(as.character(ka$Score)))
+skb=shapiro.test(as.numeric(as.character(kb$Score)))
+skc=shapiro.test(as.numeric(as.character(kc$Score)))
+#hist(as.numeric(as.character(ka$Score)))
+#hist(as.numeric(as.character(kb$Score)))
+#hist(as.numeric(as.character(kc$Score)))
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  mmTra2=data.frame(mmTra$Kmer,as.numeric(as.character(mmTra$Score)))
+  colnames(mmTra2)=c("Kmer","Score")
+  #one way ANOVA - significant p <.05
+  myaov <- aov(Score ~ Kmer, data=mmTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  mmTra2=data.frame(mmTra$Kmer,as.numeric(as.character(mmTra$Score)))
+  colnames(mmTra2)=c("Kmer","Score")
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(Score ~ Kmer, data=mmTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(mmTra2$Score, mmTra2$Kmer, p.adjust.method = "BH") 
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Fragmented**
+
+```{r busco_kmers_MM_frag, echo=FALSE}
+writeLines("Fragmented genes comparison\n")
+all <- data.frame(lapply(csv, function(x) {gsub("MM[0-9]", "MM", x)}))
+mm <- all %>% filter(Sample=="MM")
+mmTra<- mm %>% filter(Category=="Fragmented")
+
+p <- plot_ly(mmTra, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Fragmented BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+ka <- mmTra %>% filter(Kmer=="KmerA")
+kb <- mmTra %>% filter(Kmer=="KmerB")
+kc <- mmTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+#droplevels(ka)
+ska=shapiro.test(as.numeric(as.character(ka$Score)))
+skb=shapiro.test(as.numeric(as.character(kb$Score)))
+skc=shapiro.test(as.numeric(as.character(kc$Score)))
+#hist(as.numeric(as.character(ka$Score)))
+#hist(as.numeric(as.character(kb$Score)))
+#hist(as.numeric(as.character(kc$Score)))
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  mmTra2=data.frame(mmTra$Kmer,as.numeric(as.character(mmTra$Score)))
+  colnames(mmTra2)=c("Kmer","Score")
+  #one way ANOVA - significant p <.05
+  myaov <- aov(Score ~ Kmer, data=mmTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  mmTra2=data.frame(mmTra$Kmer,as.numeric(as.character(mmTra$Score)))
+  colnames(mmTra2)=c("Kmer","Score")
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(Score ~ Kmer, data=mmTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(mmTra2$Score, mmTra2$Kmer, p.adjust.method = "BH") 
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Missing**
+
+```{r busco_kmers_MM_mis, echo=FALSE}
+writeLines("Missing genes comparison\n")
+all <- data.frame(lapply(csv, function(x) {gsub("MM[0-9]", "MM", x)}))
+mm <- all %>% filter(Sample=="MM")
+mmTra<- mm %>% filter(Category=="Missing")
+
+p <- plot_ly(mmTra, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Missing BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+ka <- mmTra %>% filter(Kmer=="KmerA")
+kb <- mmTra %>% filter(Kmer=="KmerB")
+kc <- mmTra %>% filter(Kmer=="KmerC")
+
+#shapiro.test for normality
+#droplevels(ka)
+ska=shapiro.test(as.numeric(as.character(ka$Score)))
+skb=shapiro.test(as.numeric(as.character(kb$Score)))
+skc=shapiro.test(as.numeric(as.character(kc$Score)))
+#hist(as.numeric(as.character(ka$Score)))
+#hist(as.numeric(as.character(kb$Score)))
+#hist(as.numeric(as.character(kc$Score)))
+if (ska$p.value > .05 && skb$p.value > .05 && skc$p.value > .05) {
+  print("All sets are normally distributed")
+  mmTra2=data.frame(mmTra$Kmer,as.numeric(as.character(mmTra$Score)))
+  colnames(mmTra2)=c("Kmer","Score")
+  #one way ANOVA - significant p <.05
+  myaov <- aov(Score ~ Kmer, data=mmTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  mmTra2=data.frame(mmTra$Kmer,as.numeric(as.character(mmTra$Score)))
+  colnames(mmTra2)=c("Kmer","Score")
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(Score ~ Kmer, data=mmTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(mmTra2$Score, mmTra2$Kmer, p.adjust.method = "BH") 
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**BUSCO and reads**
+
+```{r busco_reads_MM, echo=FALSE}
+comp <- csv %>% filter(grepl("MM[0-9]", Sample))
+comp4=data.frame(comp$Program, comp$Category, comp$Score, comp$Reads, comp$Sample)
+head(comp4)
+colnames(comp4) <- c("Program", "Category", "Score","Reads","Sample")
+c0a <- comp4 %>% filter(Program=="Transpi")
+c1a <- c0a %>% filter(Category=="Complete")
+c2a <- c0a %>% filter(Category=="Single-Copy")
+c3a <- c0a %>% filter(Category=="Duplicated")
+c0b <- comp4 %>% filter(Program=="Trinity")
+c1b <- c0b %>% filter(Category=="Complete")
+c2b <- c0b %>% filter(Category=="Single-Copy")
+c3b <- c0b %>% filter(Category=="Duplicated")
+c4 <- data.frame(c1a$Reads, c1a$Score, c2a$Score, c3a$Score, c1b$Score, c2b$Score, c3b$Score)
+colnames(c4) <- c("Reads","CompleteA","SingleA","DuplicatedA", "CompleteB","SingleB","DuplicatedB")
+
+p <- plot_ly(c4, x=~Reads, y=~CompleteA, type="box", boxmean='sd', name="Complete-TransPi")
+p <- p %>% add_boxplot(x=~Reads, y=~CompleteB, type="box", boxmean='sd', name="Complete-Trinity")
+p <- p %>% add_boxplot(x=~Reads, y=~SingleA, type="box", boxmean='sd', name="Single-TransPi")
+p <- p %>% add_boxplot(x=~Reads, y=~SingleB, type="box", boxmean='sd', name="Single-Trinity")
+p <- p %>% add_boxplot(x=~Reads, y=~DuplicatedA, type="box", boxmean='sd', name="Duplicated-TransPi")
+p <- p %>% add_boxplot(x=~Reads, y=~DuplicatedB, type="box", boxmean='sd', name="Duplicated-Trinity")
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), xaxis=list(type = "linear"), yaxis=list(title="BUSCO %"))
+p
+```
+
+<br><br><br>
+
+<div class="rectangle"></div>
+
+### By sample (all sets)
+
+```{r busco_allsets_bysample, echo=FALSE}
+all=csv %>% filter(Category=="Complete")
+p <- plot_ly(all, x=~Program, y=~Score, color=~Sample, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Complete BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+all=csv %>% filter(Category=="Single-Copy")
+p <- plot_ly(all, x=~Program, y=~Score, color=~Sample, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Single-Copy BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+all=csv %>% filter(Category=="Duplicated")
+p <- plot_ly(all, x=~Program, y=~Score, color=~Sample, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Duplicated BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+all=csv %>% filter(Category=="Fragmented")
+p <- plot_ly(all, x=~Program, y=~Score, color=~Sample, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Fragmented BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+all=csv %>% filter(Category=="Missing")
+p <- plot_ly(all, x=~Program, y=~Score, color=~Sample, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Missing BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+```

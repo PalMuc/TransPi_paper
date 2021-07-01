@@ -1,0 +1,360 @@
+---
+title: "quast_real"
+output: html_document
+---
+
+<style>
+.rectangle {
+  height: 37px;
+  width: 105%;
+  background-color: #576675;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+      message = FALSE,
+      warning = FALSE,
+      out.width="100%")
+```
+
+```{r libraries, include=T}
+library(reshape2)
+library(plotly)
+library(dplyr)
+```
+
+```{r data, include=T}
+csv=read.csv("real_data_quast.csv", header=TRUE)
+csvt=read.csv("real_data_quast_trinity.csv", header=TRUE)
+```
+
+### Number of trancripts per sample 
+
+```{r plot, echo=FALSE}
+csv2=csv[order(csv$sample),]
+myAxis <- list(
+  tickfont = list(color = "red"),
+  overlaying = "y",
+  side = "right",
+  title = "",
+  type = "linear"
+)
+mxAxis <- list(
+  tickfont = list(color = "black"),
+  title = "",
+  range=c(0,50),
+  dtick=1
+)
+p <- plot_ly(csv2, x=~sample, y=~number_transcripts, type="bar", mode='markers', name="Number of transcripts", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p  %>% layout(xaxis=mxAxis, yaxis=list(title = "Number of transcripts"))
+p
+```
+
+<br><br>
+
+### Number of trancripts >500bp per sample 
+
+```{r plot2, echo=FALSE}
+p <- plot_ly(csv2, x=~sample, y=~n500, type="bar", mode='markers', name="Transcripts > 500 bp", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p  %>% layout(xaxis=mxAxis, yaxis=list(title = "Transcripts > 500 bp"))
+p
+```
+
+<br><br>
+
+### Number of trancripts >1000bp per sample 
+
+```{r plot3, echo=FALSE}
+p <- plot_ly(csv2, x=~sample, y=~n1k, type="bar", mode='markers', name="Transcripts > 1000 bp", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p  %>% layout(xaxis=mxAxis, yaxis=list(title = "Transcripts > 1000 bp"))
+p
+```
+
+
+<br><br>
+
+### Average length of trancripts per sample 
+
+```{r plot4, echo=FALSE}
+p <- plot_ly(csv2, x=~sample, y=~average_length, type="bar", mode='markers', name="Average length", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p  %>% layout(xaxis=mxAxis, yaxis=list(title = "Average length"))
+p
+```
+
+
+<br><br>
+
+### Longest trancripts per sample 
+
+```{r plot5, echo=FALSE}
+p <- plot_ly(csv2, x=~sample, y=~longest_transcript, type="bar", mode='markers', name="Longest transcript", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p  %>% layout(xaxis=mxAxis, yaxis=list(title = "Longest transcript"))
+p
+```
+
+
+<br><br>
+
+### Total length per sample 
+
+```{r plot6, echo=FALSE}
+p <- plot_ly(csv2, x=~sample, y=~total_length, type="bar", mode='markers', name="Total length", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p  %>% layout(xaxis=mxAxis, yaxis=list(title = "Total length"))
+p
+```
+
+<br><br>
+
+### N50 per sample 
+
+```{r plot7, echo=FALSE}
+p <- plot_ly(csv2, x=~sample, y=~n50, type="bar", mode='markers', name="N50", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p  %>% layout(xaxis=mxAxis, yaxis=list(title = "N50"))
+p
+```
+
+<br><br>
+
+### Number of Genes per sample 
+
+```{r plot8, echo=FALSE}
+p <- plot_ly(csv2, x=~sample, y=~genes, type="bar", mode='markers', name="Genes", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p  %>% layout(xaxis=mxAxis, yaxis=list(title = "Number of Genes"))
+p
+```
+
+<br><br>
+
+### Boxplot of all samples
+
+```{r plot9, echo=FALSE}
+#including all
+csv2=csv[order(csv$sample),]
+csv3=melt(csv2)
+p <- plot_ly(csv3, x=~variable, y=~value, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5))
+p
+```
+
+<br><br>
+
+### Boxplot of number of transcripts and longest transcripts 
+
+```{r plot10, echo=FALSE}
+#number_transcripts and longest_transcript
+csv2=csv[order(csv$sample),]
+csv3=melt(csv2)
+csv3 <- subset(csv2, select = c(number_transcripts, longest_transcript))
+csv3=melt(csv3)
+p <- plot_ly(csv3, x=~variable, y=~value, type="box", boxmean='sd')
+p <- p %>% layout(xaxis=list(title=""), yaxis=list(title="Value"))
+p
+```
+
+
+<br><br>
+
+### Boxplot of n500,n1k,genes
+
+```{r plot11, echo=FALSE}
+#transpi n500,n1k,genes
+csv2=csv[order(csv$sample),]
+csv3 <- subset(csv2, select = c(sample, n500, n1k, genes))
+csv3=melt(csv3)
+p <- plot_ly(csv3, x=~variable, y=~value, type="box", boxmean='sd')
+p <- p %>% layout(xaxis=list(title=""), yaxis=list(title="Value"))
+p
+```
+
+<br><br>
+
+### Boxplot of Transpi vs Trinity
+
+```{r plot12, echo=FALSE}
+#transpi vs trinity n500,n1k,genes same colors
+csv2=csv[order(csv$sample),]
+csvt2=csvt[order(csvt$sample),]
+csv3 <- data.frame((subset(csv2, select = c(sample, n500, n1k, genes))),(subset(csvt2, select = c(n500_tri, n1k_tri, genes_tri))))
+csv3=melt(csv3)
+p <- plot_ly(csv3, x=~variable, y=~value, type="box", boxmean='sd', name="TransPi")
+p <- p %>% layout(xaxis=list(title=""), yaxis=list(title="Value"))
+
+#same as above but two colors
+csv2=csv[order(csv$sample),]
+csvt2=csvt[order(csv2$sample),]
+csv3tran <- data.frame((subset(csv2, select = c(sample, number_transcripts, n500, n1k, average_length, n50, longest_transcript, genes))))
+csv3tri <- data.frame((subset(csvt2, select = c(sample, number_transcripts_tri, n500_tri, n1k_tri, average_length_tri, n50_tri, longest_transcript_tri, genes_tri))))
+csv3tran <- csv3tran %>% 
+  rename(Sample=sample, 
+         "Number of transcripts"=number_transcripts, 
+         "n > 500"=n500, 
+         "n > 1000"=n1k,
+         "Average length"=average_length, 
+         "N50"=n50, 
+         "Longest transcript"=longest_transcript,
+         Genes=genes)
+csv3tran=melt(csv3tran)
+csv3tri <- csv3tri %>% 
+  rename(Sample=sample, 
+         "Number of transcripts"=number_transcripts_tri, 
+         "n > 500"=n500_tri, 
+         "n > 1000"=n1k_tri,
+         "Average length"=average_length_tri, 
+         "N50"=n50_tri, 
+         "Longest transcript"=longest_transcript_tri, 
+         Genes=genes_tri)
+csv3tri=melt(csv3tri)
+p <- plot_ly(csv3tran, x=~variable, y=~value, type="box", boxmean='sd', name="TransPi", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(csv3tri, x=csv3tri$variable, y=csv3tri$value, name="Trinity", fillcolor='rgba(22, 84, 138,.4)', 
+                     marker=list(color='rgba(22, 84, 138,.4)'), line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% layout(boxmode = "group", xaxis=list(title=""), yaxis=list(title="Value"), legend=list(y=0.5))
+
+#almost final
+csv2=csv[order(csv$sample),]
+csvt2=csvt[order(csv2$sample),]
+csv3tran <- data.frame((subset(csv2, select = c(sample, n500, n1k, average_length, n50, longest_transcript, genes))))
+csv3tri <- data.frame((subset(csvt2, select = c(sample, n500_tri, n1k_tri, average_length_tri, n50_tri, longest_transcript_tri, genes_tri))))
+csv3tran <- csv3tran %>% 
+  rename(Sample=sample, 
+         "n > 500"=n500, 
+         "n > 1000"=n1k,
+         "Average length"=average_length, 
+         "N50"=n50, 
+         "Longest transcript"=longest_transcript,
+         Genes=genes)
+csv3tran=melt(csv3tran)
+csv3tri <- csv3tri %>% 
+  rename(Sample=sample, 
+         "n > 500"=n500_tri, 
+         "n > 1000"=n1k_tri,
+         "Average length"=average_length_tri, 
+         "N50"=n50_tri, 
+         "Longest transcript"=longest_transcript_tri, 
+         Genes=genes_tri)
+csv3tri=melt(csv3tri)
+p <- plot_ly(csv3tran, x=~variable, y=~value, type="box", boxmean='sd', name="TransPi", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(csv3tri, x=csv3tri$variable, y=csv3tri$value, name="Trinity", fillcolor='rgba(22, 84, 138,.4)', 
+                     marker=list(color='rgba(22, 84, 138,.4)'), line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% layout(boxmode = "group", xaxis=list(title=""), yaxis=list(title="Value"), legend=list(y=0.5))
+#orca(p,"rnaQuast_comparison.svg")
+
+#final
+csv2=csv[order(csv$sample),]
+csvt2=csvt[order(csv2$sample),]
+csv3tran <- data.frame((subset(csv2, select = c(sample, n500, n1k, longest_transcript, genes))))
+csv3tri <- data.frame((subset(csvt2, select = c(sample, n500_tri, n1k_tri, longest_transcript_tri, genes_tri))))
+csv3tran <- csv3tran %>% 
+  rename(Sample=sample, 
+         "n > 500"=n500, 
+         "n > 1000"=n1k,
+         "Longest transcript"=longest_transcript,
+         Genes=genes)
+csv3tran=melt(csv3tran)
+csv3tri <- csv3tri %>% 
+  rename(Sample=sample, 
+         "n > 500"=n500_tri, 
+         "n > 1000"=n1k_tri,
+         "Longest transcript"=longest_transcript_tri, 
+         Genes=genes_tri)
+csv3tri=melt(csv3tri)
+p <- plot_ly(csv3tran, x=~variable, y=~value, type="box", boxmean='sd', name="TransPi", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(csv3tri, x=csv3tri$variable, y=csv3tri$value, name="Trinity", fillcolor='rgba(22, 84, 138,.4)', 
+                     marker=list(color='rgba(22, 84, 138,.4)'), line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% layout(boxmode = "group", xaxis=list(title=""), yaxis=list(title="Value"), legend=list(y=0.5))
+p
+#orca(p,"rnaQuast_comparison_A.svg")
+csv2=csv[order(csv$sample),]
+csvt2=csvt[order(csv2$sample),]
+csv3tran <- data.frame((subset(csv2, select = c(sample, average_length, n50))))
+csv3tri <- data.frame((subset(csvt2, select = c(sample, average_length_tri, n50_tri))))
+csv3tran <- csv3tran %>% 
+  rename(Sample=sample,
+         "Average length"=average_length, 
+         "N50"=n50)
+csv3tran=melt(csv3tran)
+csv3tri <- csv3tri %>% 
+  rename(Sample=sample,
+         "Average length"=average_length_tri, 
+         "N50"=n50_tri)
+csv3tri=melt(csv3tri)
+p2 <- plot_ly(csv3tran, x=~variable, y=~value, type="box", boxmean='sd', name="TransPi", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p2 <- p2 %>% add_trace(csv3tri, x=csv3tri$variable, y=csv3tri$value, name="Trinity", fillcolor='rgba(22, 84, 138,.4)', 
+                     marker=list(color='rgba(22, 84, 138,.4)'), line=list(color='rgba(22, 84, 138,.65)'))
+p2 <- p2 %>% layout(boxmode = "group", xaxis=list(title=""), yaxis=list(title="Value", range=c(0,3100)), legend=list(show=FALSE,y=0.5))
+p2
+s <- subplot(p,p2, nrows = 1, shareX = FALSE, shareY = FALSE, margin = .06, heights = c(0.5))
+s <- s %>% layout(legend=list(y=.5, x=1.02, font=list(size=12)), xaxis=list(font=list(size=6)))
+#orca(p2,"rnaQuast_comparison_B.svg")
+```
+
+
+<br><br>
+
+### Boxplot of Transpi vs Trinity: number of transcripts, n>500, n>1k, genes
+
+```{r plot14, echo=FALSE}
+#number of transcripts
+csv2=csv[order(csv$sample),]
+csvt2=csvt[order(csvt$sample),]
+csv3 <- data.frame((subset(csv2, select = c(sample, number_transcripts))),(subset(csvt2, select = c(number_transcripts_tri))))
+csv3 <- csv3 %>% 
+  rename(Sample=sample,
+         TrasPi=number_transcripts,
+         Trinity=number_transcripts_tri)
+csv3=melt(csv3)
+p <- plot_ly(csv3, x=~variable, y=~value, type="box", boxmean='sd')
+p <- p %>% layout(xaxis=list(title=""), yaxis=list(title="Number of trancripts"))
+p
+
+#n>500
+csv2=csv[order(csv$sample),]
+csvt2=csvt[order(csvt$sample),]
+csv3 <- data.frame((subset(csv2, select = c(sample, n500))),(subset(csvt2, select = c(n500_tri))))
+csv3 <- csv3 %>% 
+  rename(Sample=sample,
+         TrasPi=n500,
+         Trinity=n500_tri)
+csv3=melt(csv3)
+p <- plot_ly(csv3, x=~variable, y=~value, type="box", boxmean='sd')
+p <- p %>% layout(xaxis=list(title=""), yaxis=list(title="Number of trancripts > 500bp"))
+p
+
+#n>1k
+csv2=csv[order(csv$sample),]
+csvt2=csvt[order(csvt$sample),]
+csv3 <- data.frame((subset(csv2, select = c(sample, n1k))),(subset(csvt2, select = c(n1k_tri))))
+csv3 <- csv3 %>% 
+  rename(Sample=sample,
+         TrasPi=n1k,
+         Trinity=n1k_tri)
+csv3=melt(csv3)
+p <- plot_ly(csv3, x=~variable, y=~value, type="box", boxmean='sd')
+p <- p %>% layout(xaxis=list(title=""), yaxis=list(title="Number of trancripts > 1000bp"))
+p
+
+#genes
+csv2=csv[order(csv$sample),]
+csvt2=csvt[order(csvt$sample),]
+csv3 <- data.frame((subset(csv2, select = c(sample, genes))),(subset(csvt2, select = c(genes_tri))))
+csv3 <- csv3 %>% 
+  rename(Sample=sample,
+         TrasPi=genes,
+         Trinity=genes_tri)
+csv3=melt(csv3)
+p <- plot_ly(csv3, x=~variable, y=~value, type="box", boxmean='sd')
+p <- p %>% layout(xaxis=list(title=""), yaxis=list(title="Number of predicetd genes"))
+p
+```

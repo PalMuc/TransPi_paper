@@ -1,0 +1,90 @@
+---
+title: "assemblers_distribution"
+output: html_document
+---
+
+<style>
+.rectangle {
+  height: 37px;
+  width: 105%;
+  background-color: #576675;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+      message = FALSE,
+      warning = FALSE,
+      out.width="100%")
+```
+
+```{r libraries, include=T}
+library(reshape2)
+library(plotly)
+library(dplyr)
+```
+
+```{r data, include=T}
+csv_preEG=read.csv("real_preEG.csv", header=TRUE)
+csv_EG=read.csv("real_EG.csv", header=TRUE)
+```
+
+### Pre EG (by sample)
+```{r plot_dist, echo=FALSE}
+csv_preEG=csv_preEG[order(csv_preEG$sample),]
+p <- plot_ly(csv_preEG, x=~sample, y=~total, type="scatter", boxmean='sd', name="Total", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(y=csv_preEG$trinity, name="Trinity", fillcolor='rgba(22, 84, 138,.4)', marker=list(color='rgba(22, 84, 138,.4)'), 
+                     line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% add_trace(y=csv_preEG$soap, name="SOAP", fillcolor='rgba(3, 43, 76,.4)', marker=list(color='rgba(3, 43, 76,.4)'), 
+                     line=list(color='rgba(3, 43, 76,.65)'))
+p <- p %>% add_trace(y=csv_preEG$velvet, name="Velvet", fillcolor='rgba(122, 84, 138,.4)', marker=list(color='rgba(122, 84, 138,.4)'), 
+                     line=list(color='rgba(122, 84, 138,.65)'))
+p <- p %>% add_trace(y=csv_preEG$spades, name="SPADES", fillcolor='rgba(22, 184, 138,.4)', marker=list(color='rgba(22, 184, 138,.4)'), 
+                     line=list(color='rgba(22, 184, 138,.65)'))
+p <- p %>% add_trace(y=csv_preEG$abyss, name="ABySS", fillcolor='rgba(22, 84, 238,.4)', marker=list(color='rgba(22, 84, 238,.4)'), 
+                     line=list(color='rgba(22, 84, 238,.65)'))
+p
+```
+
+<br><br>
+
+### After EG (by sample)
+```{r plot_dist2, echo=FALSE}
+csv_EG=csv_EG[order(csv_EG$sample),]
+p <- plot_ly(csv_EG, x=~sample, y=~total, type="scatter", boxmean='sd', name="Total", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(y=csv_EG$trinity, name="Trinity", fillcolor='rgba(22, 84, 138,.4)', marker=list(color='rgba(22, 84, 138,.4)'), 
+                     line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% add_trace(y=csv_EG$soap, name="SOAP", fillcolor='rgba(3, 43, 76,.4)', marker=list(color='rgba(3, 43, 76,.4)'), 
+                     line=list(color='rgba(3, 43, 76,.65)'))
+p <- p %>% add_trace(y=csv_EG$velvet, name="Velvet", fillcolor='rgba(122, 84, 138,.4)', marker=list(color='rgba(122, 84, 138,.4)'), 
+                     line=list(color='rgba(122, 84, 138,.65)'))
+p <- p %>% add_trace(y=csv_EG$spades, name="SPADES", fillcolor='rgba(22, 184, 138,.4)', marker=list(color='rgba(22, 184, 138,.4)'), 
+                     line=list(color='rgba(22, 184, 138,.65)'))
+p <- p %>% add_trace(y=csv_EG$abyss, name="ABySS", fillcolor='rgba(22, 84, 238,.4)', marker=list(color='rgba(22, 84, 238,.4)'), 
+                     line=list(color='rgba(22, 84, 238,.65)'))
+p
+```
+
+<br><br>
+
+### Pre EG (combined)
+```{r plot_dist3, echo=FALSE}
+csv_preEG=melt(csv_preEG, id.vars = 'sample')
+p <- plot_ly(csv_preEG, x=~variable, y=~value, type="box", boxmean='sd', name="Total", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% layout(title="Before reduction", yaxis=list(type='lineal', title="Transcripts"), xaxis=list(title="Assembler"))
+p
+```
+
+<br><br>
+
+### After EG (combined)
+```{r plot_dist4, echo=FALSE}
+csv_EG=melt(csv_EG, id.vars = 'sample')
+p <- plot_ly(csv_EG, x=~variable, y=~value, type="box", boxmean='sd', name="Total", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% layout(title="After reduction", yaxis=list(type='lineal', title="Transcripts"), xaxis=list(title="Assembler"))
+p
+```

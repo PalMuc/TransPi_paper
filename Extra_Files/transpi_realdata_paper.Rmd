@@ -1,0 +1,732 @@
+---
+title: "transpi_realdata_paper"
+output: html_document
+---
+
+<style>
+.rectangle {
+  height: 37px;
+  width: 105%;
+  background-color: #576675;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+      message = FALSE,
+      warning = FALSE,
+      out.width="100%")
+```
+
+```{r libraries, include=T}
+library(reshape2)
+library(plotly)
+library(dplyr)
+```
+
+# busco3_real
+
+```{r data, include=T}
+csv=read.csv("busco3_real.csv", header=TRUE)
+```
+
+### All BUSCO (all sets)
+
+```{r busco_allsets, echo=FALSE}
+p <- plot_ly(csv, x=~Category, y=~Score, color=~Program, type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "BUSCO genes (all sets)", 
+                  xaxis =list(categoryorder = "array", 
+                  categoryarray = c("Complete", "Single-Copy", "Duplicated","Fragmented","Missing")),
+                  yaxis=list(title="BUSCO %", type = "linear", range=c(0,101), dtick=10), font=list(size=15))
+p
+orca(p,"real_busco_all.svg")
+```
+
+**Complete**
+
+```{r busco_allsets_comp, echo=FALSE}
+writeLines("Complete genes comparison\n")
+comp <- csv %>% filter(Category=="Complete")
+p <- plot_ly(comp, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Complete BUSCO genes (all sets)")
+p
+
+orca(p,"real_busco_all_complete.svg")
+
+#stats for busco_allsets (complete)
+comp <- csv %>% filter(Category=="Complete")
+traComp <- comp %>% filter(Program=="Transpi")
+triComp <- comp %>% filter(Program=="Trinity")
+
+#shapiro.test for normality
+straComp=shapiro.test(traComp$Score)
+striComp=shapiro.test(triComp$Score)
+#hist(traComp$Score)
+#hist(triComp$Score)
+if (straComp$p.value > .05 && striComp$p.value > .05) {
+  print("All sets are normally distributed")
+  comp2=data.frame(comp$Program,comp$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(comp$Score ~ comp$Program, data=comp2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  comp2=data.frame(comp$Program,comp$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(comp$Score ~ comp$Program, data=comp2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    print("P value")
+    print(mykt$p.value)
+    print("Pairwise wilcox test")
+    pairwise.wilcox.test(comp$Score, comp$Program, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+
+#two way anova
+#comp3=data.frame(comp$Program,comp$Score,comp$Reads)
+#head(comp3)
+#colnames(comp3) <- c("Program","Score","Reads")
+
+#myaov <- aov(Score ~ Program + Reads, data=comp3)
+#myaov
+#summary(myaov)
+# with interaction
+#myaovi <- aov(Score ~ Program + Reads + Program:Reads , data=comp3)
+#myaovi
+#summary(myaovi)
+
+```
+
+**Single**
+
+```{r busco_allsets_sing, echo=FALSE}
+writeLines("Single genes comparison\n")
+sing <- csv %>% filter(Category=="Single-Copy")
+p <- plot_ly(sing, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Single-Copy BUSCO genes (all sets)")
+p
+
+orca(p,"real_busco_all_single.svg")
+
+#stats for busco_allsets (single)
+sing <- csv %>% filter(Category=="Single-Copy")
+traSing <- sing %>% filter(Program=="Transpi")
+triSing <- sing %>% filter(Program=="Trinity")
+
+#shapiro.test for normality
+straSing=shapiro.test(traSing$Score)
+striSing=shapiro.test(triSing$Score)
+#hist(traSing$Score)
+#hist(triSing$Score)
+if (straSing$p.value > .05 && striSing$p.value > .05) {
+  print("All sets are normally distributed")
+  sing2=data.frame(sing$Program,sing$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(sing$Score ~ sing$Program, data=sing2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  sing2=data.frame(sing$Program,sing$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(sing$Score ~ sing$Program, data=sing2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    print("P value")
+    print(mykt$p.value)
+    print("Pairwise wilcox test")
+    pairwise.wilcox.test(sing$Score, sing$Program, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Duplicated** 
+
+```{r busco_allsets_dup, echo=FALSE}
+writeLines("Duplicated genes comparison\n")
+dup <- csv %>% filter(Category=="Duplicated")
+p <- plot_ly(dup, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Duplicated BUSCO genes (all sets)")
+p
+
+orca(p,"real_busco_all_duplicated.svg")
+
+#stats for busco_allsets (duplicated)
+dup <- csv %>% filter(Category=="Duplicated")
+traDup <- dup %>% filter(Program=="Transpi")
+triDup <- dup %>% filter(Program=="Trinity")
+
+#shapiro.test for normality
+straDup=shapiro.test(traDup$Score)
+striDup=shapiro.test(triDup$Score)
+#hist(traDup$Score)
+#hist(triDup$Score)
+if (straDup$p.value > .05 && striDup$p.value > .05) {
+  print("All sets are normally distributed")
+  dup2=data.frame(dup$Program,dup$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(dup$Score ~ dup$Program, data=dup2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  dup2=data.frame(dup$Program,dup$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(dup$Score ~ dup$Program, data=dup2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    print("P value")
+    print(mykt$p.value)
+    print("Pairwise wilcox test")
+    pairwise.wilcox.test(dup$Score, dup$Program, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Fragmented**
+
+```{r busco_allsets_frag, echo=FALSE}
+writeLines("Fragmented genes comparison\n")
+frag <- csv %>% filter(Category=="Fragmented")
+p <- plot_ly(frag, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Fragmented BUSCO genes (all sets)")
+p
+
+orca(p,"real_busco_all_fragmented.svg")
+
+
+#stats for busco_allsets (fragmented)
+frag <- csv %>% filter(Category=="Fragmented")
+traFrag <- frag %>% filter(Program=="Transpi")
+triFrag <- frag %>% filter(Program=="Trinity")
+
+#shapiro.test for normality
+straFrag=shapiro.test(traFrag$Score)
+striFrag=shapiro.test(triFrag$Score)
+#hist(traFrag$Score)
+#hist(triFrag$Score)
+if (straFrag$p.value > .05 && striFrag$p.value > .05) {
+  print("All sets are normally distributed")
+  frag2=data.frame(frag$Program,frag$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(frag$Score ~ frag$Program, data=frag2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  frag2=data.frame(frag$Program,frag$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(frag$Score ~ frag$Program, data=frag2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    print("P value")
+    print(mykt$p.value)
+    print("Pairwise wilcox test")
+    pairwise.wilcox.test(frag$Score, frag$Program, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+**Missing**
+
+```{r busco_allsets_mis, echo=FALSE}
+writeLines("Missing genes comparison\n")
+mis <- csv %>% filter(Category=="Missing")
+p <- plot_ly(mis, x=~Program, y=~Score, type="box", boxmean='sd')
+p <- p %>% layout(legend = list(y=.5), title = "Missing BUSCO genes (all sets)")
+p
+
+orca(p,"real_busco_all_missing.svg")
+
+
+#stats for busco_allsets (missing)
+mis <- csv %>% filter(Category=="Missing")
+traMis <- mis %>% filter(Program=="Transpi")
+triMis <- mis %>% filter(Program=="Trinity")
+
+#shapiro.test for normality
+straMis=shapiro.test(traMis$Score)
+striMis=shapiro.test(triMis$Score)
+#hist(traMis$Score)
+#hist(triMis$Score)
+if (straMis$p.value > .05 && striMis$p.value > .05) {
+  print("All sets are normally distributed")
+  mis2=data.frame(mis$Program,mis$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(mis$Score ~ mis$Program, data=mis2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  mis2=data.frame(mis$Program,mis$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(mis$Score ~ mis$Program, data=mis2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    print("P value")
+    print(mykt$p.value)
+    print("Pairwise wilcox test")
+    pairwise.wilcox.test(mis$Score, mis$Program, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+```
+
+<br><br><br>
+<div class="rectangle"></div>
+
+### All BUSCO (by reads)
+
+```{r busco_allsets_kmers, echo=FALSE}
+#Using ID
+#p <- plot_ly(csv, x=~Category, y=~Score, color=~ID, type="box", boxmean='sd')
+#p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "BUSCO genes (all sets)", 
+#                  xaxis =list(categoryorder = "array", 
+#                  categoryarray = c("Complete", "Single-Copy", "Duplicated","Fragmented","Missing")),
+#                  yaxis=list(type = "linear"))
+#p
+#Using Read length (as character)
+#p <- plot_ly(csv, x=~Category, y=~Score, color=as.character(csv$Length), type="box", boxmean='sd')
+#p <- p %>% layout(boxmode = "group", legend = list(y=.5, title=list(text="Read Size")), title = "BUSCO genes (all sets)", 
+#                  xaxis =list(categoryorder = "array", 
+#                  categoryarray = c("Complete", "Single-Copy", "Duplicated","Fragmented","Missing")),
+#                  yaxis=list(type = "linear"))
+#p
+c50 <- csv %>% filter(Length=="50")
+c75 <- csv %>% filter(Length=="75")
+c100 <- csv %>% filter(Length=="100")
+c150 <- csv %>% filter(Length=="150")
+#color=as.character(comp$Length)
+p <- plot_ly(c50, x=~Category, y=~Score, type="box", boxmean='sd', name="50", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(x=c75$Category,y=c75$Score, type="box", boxmean='sd', name="75", fillcolor='rgba(22, 84, 138,.4)', marker=list(color='rgba(22, 84, 138,.4)'), 
+                     line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% add_trace(x=c100$Category,y=c100$Score, type="box", boxmean='sd', name="100", fillcolor='rgba(3, 43, 76,.4)', marker=list(color='rgba(3, 43, 76,.4)'), 
+                     line=list(color='rgba(3, 43, 76,.65)'))
+p <- p %>% add_trace(x=c150$Category,y=c150$Score, type="box", boxmean='sd', name="150", fillcolor='rgba(80, 89, 95,.4)', 
+                     marker=list(color='rgba(80, 89, 95,.4)'), 
+                     line=list(color='rgba(80, 89, 95,.95)'))
+p <- p %>% layout(boxmode = "group", legend = list(y=.5, title=list(text="Read Size")), title = "BUSCO genes (all sets)",
+                  xaxis =list(categoryorder = "array", 
+                  categoryarray = c("Complete", "Single-Copy", "Duplicated","Fragmented","Missing")),
+                  yaxis=list(title="BUSCO %", type = "linear", range=c(0,101), dtick=10))
+p
+orca(p,"real_busco_all_readsize.svg")
+```
+
+**Only TransPi**
+
+```{r busco_allsets_kmers_transpi, echo=FALSE}
+csv2 <- csv %>% filter(Program=="Transpi")
+c50 <- csv2 %>% filter(Length=="50")
+c75 <- csv2 %>% filter(Length=="75")
+c100 <- csv2 %>% filter(Length=="100")
+c150 <- csv2 %>% filter(Length=="150")
+#color=as.character(comp$Length)
+p <- plot_ly(c50, x=~Category, y=~Score, type="box", boxmean='sd', name="50", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(x=c75$Category,y=c75$Score, type="box", boxmean='sd', name="75", fillcolor='rgba(22, 84, 138,.4)', marker=list(color='rgba(22, 84, 138,.4)'), 
+                     line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% add_trace(x=c100$Category,y=c100$Score, type="box", boxmean='sd', name="100", fillcolor='rgba(3, 43, 76,.4)', marker=list(color='rgba(3, 43, 76,.4)'), 
+                     line=list(color='rgba(3, 43, 76,.65)'))
+p <- p %>% add_trace(x=c150$Category,y=c150$Score, type="box", boxmean='sd', name="150", fillcolor='rgba(80, 89, 95,.4)', 
+                     marker=list(color='rgba(80, 89, 95,.4)'), 
+                     line=list(color='rgba(80, 89, 95,.95)'))
+p <- p %>% layout(boxmode = "group", legend = list(y=.5, title=list(text="Read Size")), title = "BUSCO genes (all sets)",
+                  xaxis =list(categoryorder = "array", 
+                  categoryarray = c("Complete", "Single-Copy", "Duplicated","Fragmented","Missing")),
+                  yaxis=list(title="BUSCO %", type = "linear", range=c(0,101), dtick=10))
+p
+orca(p,"real_busco_all_readsize_TransPi.svg")
+```
+
+**TEST STATS**   
+
+```{r busco_allsets_test_stats, eval=FALSE, include=FALSE}
+writeLines("Complete genes comparison\n")
+comp <- csv %>% filter(Category=="Complete")
+p <- plot_ly(comp, x=~Program, y=~Score, color=as.character(comp$Length), type="box", boxmean='sd')
+p <- p %>% layout(boxmode = "group", legend = list(y=.5), title = "Complete BUSCO genes (all sets)", yaxis=list(range = c(0,101)))
+p
+
+orca(p,"real_busco_all_readsize_complete.svg")
+
+comp <- csv %>% filter(Category=="Complete")
+compTra<- comp %>% filter(Program=="Transpi")
+k50 <- compTra %>% filter(Length=="50")
+k75 <- compTra %>% filter(Length=="75")
+k100 <- compTra %>% filter(Length=="100")
+k150 <- compTra %>% filter(Length=="150")
+
+#shapiro.test for normality
+sk50=shapiro.test(k50$Score)
+sk75=shapiro.test(k75$Score)
+sk100=shapiro.test(k100$Score)
+sk150=shapiro.test(k150$Score)
+#hist(k50$Score)
+#hist(k75$Score)
+#hist(k100$Score)
+#hist(k150$Score)
+if (sk50$p.value > .05 && sk75$p.value > .05 && sk100$p.value > .05 && sk150$p.value > .05) {
+  print("All sets are normally distributed")
+  compTra2=data.frame(compTra$Length,compTra$Score)
+  #one way ANOVA - significant p <.05
+  myaov <- aov(compTra$Score ~ compTra$Length, data=compTra2)
+  print("ANOVA")
+  print(summary(myaov))
+  #Tukey Honest Significant Differences (pairwise comparison) - significant p <.05
+  print("Pairwise comparison")
+  TukeyHSD(myaov)
+} else {
+  print("One (or more) set is not normally distributed")
+  compTra2=data.frame(compTra$Length,compTra$Score)
+  #Kruskal-Wallis test - significant p <.05
+  mykt <- kruskal.test(compTra$Score ~ compTra$Length, data=compTra2)
+  mykt
+  if (mykt$p.value < .05) {
+    #Pairwise comparison
+    print("Kruskal-Wallis test was significant (p<.05)")
+    pairwise.wilcox.test(compTra$Score, compTra$Length, p.adjust.method = "BH")    
+  } else {
+    print("Data not significant. Skipping pairwise comparison")
+  }
+}
+
+# stdev
+#sapply(ka, sd, na.rm=TRUE)
+# variance
+#sapply(ka, var, na.rm=TRUE)
+#summary(ka$Score)
+#ka
+#stdev
+#sd(ka$Score, na.rm=TRUE)
+
+#correlation
+#cor(ka$Score,kb$Score)
+#covariance
+#cov(ka$Score,kb$Score)
+```
+
+**Complete**   
+```{r busco_allsets_kmers_comp, echo=FALSE}
+writeLines("Complete genes comparison\n")
+comp <- csv %>% filter(Category=="Complete")
+c50 <- comp %>% filter(Length=="50")
+c75 <- comp %>% filter(Length=="75")
+c100 <- comp %>% filter(Length=="100")
+c150 <- comp %>% filter(Length=="150")
+#color=as.character(comp$Length)
+p <- plot_ly(c50, x=~Program, y=~Score, type="box", boxmean='sd', name="50", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(x=c75$Program,y=c75$Score, type="box", boxmean='sd', name="75", fillcolor='rgba(22, 84, 138,.4)', marker=list(color='rgba(22, 84, 138,.4)'), 
+                     line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% add_trace(x=c100$Program,y=c100$Score, type="box", boxmean='sd', name="100", fillcolor='rgba(3, 43, 76,.4)', marker=list(color='rgba(3, 43, 76,.4)'), 
+                     line=list(color='rgba(3, 43, 76,.65)'))
+p <- p %>% add_trace(x=c150$Program,y=c150$Score, type="box", boxmean='sd', name="150", fillcolor='rgba(80, 89, 95,.4)', 
+                     marker=list(color='rgba(80, 89, 95,.4)'), 
+                     line=list(color='rgba(80, 89, 95,.95)'))
+p <- p %>% layout(boxmode = "group", legend = list(y=.5, title=list(text="Read Size")), title = "Complete BUSCO genes (all sets)", 
+                  yaxis=list(title="BUSCO %", type = "linear", range=c(0,101), dtick=10), font=list(size=15))
+p
+orca(p,"real_busco_all_readsize_complete.svg")
+```
+
+**Singe-Copy**   
+
+```{r busco_allsets_kmers_sing, echo=FALSE}
+writeLines("Singe-Copy genes comparison\n")
+sing <- csv %>% filter(Category=="Single-Copy")
+c50 <- sing %>% filter(Length=="50")
+c75 <- sing %>% filter(Length=="75")
+c100 <- sing %>% filter(Length=="100")
+c150 <- sing %>% filter(Length=="150")
+#color=as.character(sing$Length)
+p <- plot_ly(c50, x=~Program, y=~Score, type="box", boxmean='sd', name="50", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(x=c75$Program,y=c75$Score, type="box", boxmean='sd', name="75", fillcolor='rgba(22, 84, 138,.4)', marker=list(color='rgba(22, 84, 138,.4)'), 
+                     line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% add_trace(x=c100$Program,y=c100$Score, type="box", boxmean='sd', name="100", fillcolor='rgba(3, 43, 76,.4)', marker=list(color='rgba(3, 43, 76,.4)'), 
+                     line=list(color='rgba(3, 43, 76,.65)'))
+p <- p %>% add_trace(x=c150$Program,y=c150$Score, type="box", boxmean='sd', name="150", fillcolor='rgba(80, 89, 95,.4)', 
+                     marker=list(color='rgba(80, 89, 95,.4)'), 
+                     line=list(color='rgba(80, 89, 95,.95)'))
+p <- p %>% layout(boxmode = "group", legend = list(y=.5, title=list(text="Read Size")), title = "Single-copy BUSCO genes (all sets)", 
+                  yaxis=list(title="BUSCO %", type = "linear", range=c(0,101), dtick=10), font=list(size=15))
+p
+orca(p,"real_busco_all_readsize_single.svg")
+```
+
+**Duplicated**   
+
+```{r busco_allsets_kmers_dup, echo=FALSE}
+writeLines("Duplicated genes comparison\n")
+dup <- csv %>% filter(Category=="Duplicated")
+c50 <- dup %>% filter(Length=="50")
+c75 <- dup %>% filter(Length=="75")
+c100 <- dup %>% filter(Length=="100")
+c150 <- dup %>% filter(Length=="150")
+#color=as.character(comp$Length)
+p <- plot_ly(c50, x=~Program, y=~Score, type="box", boxmean='sd', name="50", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(x=c75$Program,y=c75$Score, type="box", boxmean='sd', name="75", fillcolor='rgba(22, 84, 138,.4)', marker=list(color='rgba(22, 84, 138,.4)'), 
+                     line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% add_trace(x=c100$Program,y=c100$Score, type="box", boxmean='sd', name="100", fillcolor='rgba(3, 43, 76,.4)', marker=list(color='rgba(3, 43, 76,.4)'), 
+                     line=list(color='rgba(3, 43, 76,.65)'))
+p <- p %>% add_trace(x=c150$Program,y=c150$Score, type="box", boxmean='sd', name="150", fillcolor='rgba(80, 89, 95,.4)', 
+                     marker=list(color='rgba(80, 89, 95,.4)'), 
+                     line=list(color='rgba(80, 89, 95,.95)'))
+p <- p %>% layout(boxmode = "group", legend = list(y=.5, title=list(text="Read Size")), title = "Duplicated BUSCO genes (all sets)", 
+                  yaxis=list(title="BUSCO %", type = "linear", range=c(0,101), dtick=10), font=list(size=15))
+p
+orca(p,"real_busco_all_readsize_duplicated.svg")
+```
+
+**Fragmented**   
+
+```{r busco_allsets_kmers_frag, echo=FALSE}
+writeLines("Fragmented genes comparison\n")
+frag <- csv %>% filter(Category=="Fragmented")
+c50 <- frag %>% filter(Length=="50")
+c75 <- frag %>% filter(Length=="75")
+c100 <- frag %>% filter(Length=="100")
+c150 <- frag %>% filter(Length=="150")
+#color=as.character(comp$Length)
+p <- plot_ly(c50, x=~Program, y=~Score, type="box", boxmean='sd', name="50", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(x=c75$Program,y=c75$Score, type="box", boxmean='sd', name="75", fillcolor='rgba(22, 84, 138,.4)', marker=list(color='rgba(22, 84, 138,.4)'), 
+                     line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% add_trace(x=c100$Program,y=c100$Score, type="box", boxmean='sd', name="100", fillcolor='rgba(3, 43, 76,.4)', marker=list(color='rgba(3, 43, 76,.4)'), 
+                     line=list(color='rgba(3, 43, 76,.65)'))
+p <- p %>% add_trace(x=c150$Program,y=c150$Score, type="box", boxmean='sd', name="150", fillcolor='rgba(80, 89, 95,.4)', 
+                     marker=list(color='rgba(80, 89, 95,.4)'), 
+                     line=list(color='rgba(80, 89, 95,.95)'))
+p <- p %>% layout(boxmode = "group", legend = list(y=.5, title=list(text="Read Size")), title = "Fragmented BUSCO genes (all sets)", 
+                  yaxis=list(title="BUSCO %", type = "linear", range=c(0,101), dtick=10))
+p
+orca(p,"real_busco_all_readsize_fragmented.svg")
+```
+
+**Missing**   
+
+```{r busco_allsets_kmers_mis, echo=FALSE}
+writeLines("Missing genes comparison\n")
+mis <- csv %>% filter(Category=="Missing")
+c50 <- mis %>% filter(Length=="50")
+c75 <- mis %>% filter(Length=="75")
+c100 <- mis %>% filter(Length=="100")
+c150 <- mis %>% filter(Length=="150")
+#color=as.character(comp$Length)
+p <- plot_ly(c50, x=~Program, y=~Score, type="box", boxmean='sd', name="50", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(x=c75$Program,y=c75$Score, type="box", boxmean='sd', name="75", fillcolor='rgba(22, 84, 138,.4)', marker=list(color='rgba(22, 84, 138,.4)'), 
+                     line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% add_trace(x=c100$Program,y=c100$Score, type="box", boxmean='sd', name="100", fillcolor='rgba(3, 43, 76,.4)', marker=list(color='rgba(3, 43, 76,.4)'), 
+                     line=list(color='rgba(3, 43, 76,.65)'))
+p <- p %>% add_trace(x=c150$Program,y=c150$Score, type="box", boxmean='sd', name="150", fillcolor='rgba(80, 89, 95,.4)', 
+                     marker=list(color='rgba(80, 89, 95,.4)'), 
+                     line=list(color='rgba(80, 89, 95,.95)'))
+p <- p %>% layout(boxmode = "group", legend = list(y=.5, title=list(text="Read Size")), title = "Missing BUSCO genes (all sets)", 
+                  yaxis=list(title="BUSCO %", type = "linear", range=c(0,101), dtick=10))
+p
+orca(p,"real_busco_all_readsize_missing.svg")
+```
+
+<br><br><br>
+<div class="rectangle"></div>
+
+### By species (all sets)
+
+```{r busco_allsets_byspecies, echo=FALSE}
+all <- csv
+busco <- all %>% filter(Category=="Complete")
+p <- plot_ly(busco, x=~Program, y=~Score, color=~Sample,  text=~Sample,            
+            hovertemplate=paste("Sample: %{text}", "<br>Program: %{x}", "<br>BUSCO Score: %{y}", '<extra></extra>'),
+            type="scatter", mode = 'lines+markers')
+p <- p %>% layout(legend = list(y=.5), showlegend=FALSE, title = "Complete BUSCO genes (all sets)", 
+                  yaxis=list(type = "linear"))
+p
+
+orca(p,"real_busco_all_species_complete.svg")
+
+busco <- all %>% filter(Category=="Single-Copy")
+p <- plot_ly(busco, x=~Program, y=~Score, color=~Sample, text=~Sample, 
+            hovertemplate=paste("Sample: %{text}", "<br>Program: %{x}", "<br>BUSCO Score: %{y}", '<extra></extra>'),
+            type="scatter", mode = 'lines+markers')
+p <- p %>% layout(legend = list(y=.5), showlegend=FALSE, title = "Single-Copy BUSCO genes (all sets)",
+            yaxis=list(type = "linear"))
+p
+
+orca(p,"real_busco_all_species_single.svg")
+
+busco <- all %>% filter(Category=="Duplicated")
+p <- plot_ly(busco, x=~Program, y=~Score, color=~Sample,  text=~Sample,            
+            hovertemplate=paste("Sample: %{text}", "<br>Program: %{x}", "<br>BUSCO Score: %{y}", '<extra></extra>'),
+            type="scatter", mode = 'lines+markers')
+p <- p %>% layout(legend = list(y=.5), showlegend=FALSE, title = "Duplicated BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+orca(p,"real_busco_all_species_duplicated.svg")
+
+busco <- all %>% filter(Category=="Fragmented")
+p <- plot_ly(busco, x=~Program, y=~Score, color=~Sample,  text=~Sample,            
+            hovertemplate=paste("Sample: %{text}", "<br>Program: %{x}", "<br>BUSCO Score: %{y}", '<extra></extra>'),
+            type="scatter", mode = 'lines+markers')
+p <- p %>% layout(legend = list(y=.5),  showlegend=FALSE,title = "Fragmented BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+orca(p,"real_busco_all_species_fragmented.svg")
+
+busco <- all %>% filter(Category=="Missing")
+p <- plot_ly(busco, x=~Program, y=~Score, color=~Sample,text=~Sample,            
+            hovertemplate=paste("Sample: %{text}", "<br>Program: %{x}", "<br>BUSCO Score: %{y}", '<extra></extra>'),
+            type="scatter", mode = 'lines+markers')
+p <- p %>% layout(legend = list(y=.5), showlegend=FALSE, title = "Missing BUSCO genes (all sets)",
+                  yaxis=list(type = "linear"))
+p
+
+p <- plot_ly(busco, x=~Program, y=~Score, color=~Sample,
+            type="scatter", mode = 'lines+markers')
+p <- p %>% layout(showlegend=FALSE)
+p
+
+orca(p,"real_busco_all_species_missing.svg")
+```
+
+<br><br><br>
+
+<div class="rectangle"></div>
+
+**BUSCO and reads**
+
+```{r busco_reads, echo=FALSE}
+comp <- csv 
+comp4=data.frame(comp$Program, comp$Category, comp$Score, comp$Reads, comp$Sample)
+colnames(comp4) <- c("Program", "Category", "Score","Reads","Sample")
+c0a <- comp4 %>% filter(Program=="Transpi")
+c1a <- c0a %>% filter(Category=="Complete")
+c2a <- c0a %>% filter(Category=="Single-Copy")
+c3a <- c0a %>% filter(Category=="Duplicated")
+c0b <- comp4 %>% filter(Program=="Trinity")
+c1b <- c0b %>% filter(Category=="Complete")
+c2b <- c0b %>% filter(Category=="Single-Copy")
+c3b <- c0b %>% filter(Category=="Duplicated")
+c4 <- data.frame(c1a$Sample, c1a$Reads, c1a$Score, c2a$Score, c3a$Score, c1b$Score, c2b$Score, c3b$Score)
+colnames(c4) <- c("Sample","Reads","CompleteA","SingleA","DuplicatedA", "CompleteB","SingleB","DuplicatedB")
+
+p <- plot_ly(c4, x=~Reads, y=~CompleteA, type="scatter", name="Complete-TransPi", text=~Sample,
+             hovertemplate=paste("Sample: %{text}","<br>Number of Reads: %{x}", "<br>BUSCO Score: %{y}", 
+                                 "<br>Classification: %{fullData.name}" , "<extra></extra>"), marker=list(color='rgba(22, 84, 138,.80)'))
+p <- p %>% add_trace(x=~Reads, y=~CompleteB, type="scatter", name="Complete-Trinity", marker=list(color='rgba(118, 176, 212,.70)'))
+p <- p %>% add_trace(x=~Reads, y=~SingleA, type="scatter", name="Single-TransPi", marker=list(color='rgba(230, 79, 8,.80)'))
+p <- p %>% add_trace(x=~Reads, y=~SingleB, type="scatter", name="Single-Trinity", marker=list(color='rgba(236, 158, 121,.70)'))
+p <- p %>% add_trace(x=~Reads, y=~DuplicatedA, type="scatter", name="Duplicated-TransPi", marker=list(color='rgba(27, 152, 63,.95)'))
+p <- p %>% add_trace(x=~Reads, y=~DuplicatedB, type="scatter", name="Duplicated-Trinity", marker=list(color='rgba(108, 208, 136,.60)'))
+p <- p %>% layout(legend = list(y=.5), xaxis=list(type = "linear"), yaxis=list(title="BUSCO %", type = "linear", range=c(0,101), tick0 = 0, dtick = 10))
+p
+
+###################################
+replaceCommas<-function(x){
+  x<-as.numeric(gsub("\\,", "", x))
+}
+c5 <- data.frame(c1a$Sample, replaceCommas(c1a$Reads), c1a$Score, c2a$Score, c3a$Score, c1b$Score, c2b$Score, c3b$Score)
+colnames(c5) <- c("Sample","Reads","CompleteA","SingleA","DuplicatedA", "CompleteB","SingleB","DuplicatedB")
+
+c6=c5[order(c5$Reads),]
+         
+p <- plot_ly(c6, x=~Reads, y=~CompleteA, type="scatter", mode = 'markers+lines', name="Complete-TransPi", text=~Sample,
+             hovertemplate=paste("Sample: %{text}","<br>Number of Reads: %{x}", "<br>BUSCO Score: %{y}", 
+                                 "<br>Classification: %{fullData.name}" , "<extra></extra>"), marker=list(color='rgba(22, 84, 138,.80)'),
+            line=list(color='rgba(22, 84, 138,.30)'))
+p <- p %>% add_trace(x=~Reads, y=~CompleteB, type="scatter", name="Complete-Trinity", marker=list(color='rgba(118, 176, 212,.70)'),
+                     line=list(color='rgba(118, 176, 212,.30)'))
+p <- p %>% add_trace(x=~Reads, y=~SingleA, type="scatter", name="Single-TransPi", marker=list(color='rgba(230, 79, 8,.80)'),
+                     line=list(color='rgba(230, 79, 8,.30)'))
+p <- p %>% add_trace(x=~Reads, y=~SingleB, type="scatter", name="Single-Trinity", marker=list(color='rgba(236, 158, 121,.70)'),
+                     line=list(color='rgba(236, 158, 121,.30)'))
+p <- p %>% add_trace(x=~Reads, y=~DuplicatedA, type="scatter", name="Duplicated-TransPi", marker=list(color='rgba(27, 152, 63,.95)'),
+                     line=list(color='rgba(27, 152, 63,.30)'))
+p <- p %>% add_trace(x=~Reads, y=~DuplicatedB, type="scatter", name="Duplicated-Trinity", marker=list(color='rgba(108, 208, 136,.60)'),
+                     line=list(color='rgba(108, 208, 136,.30)'))
+p <- p %>% layout(legend = list(y=.5), xaxis=list(type = "linear"), 
+                  yaxis=list(title="BUSCO %", type = "linear", range=c(0,101), tick0 = 0, dtick = 10))
+p
+orca(p,"real_busco_all_readsnumber.svg")
+```
+
+```{r busco_reads_hist, echo=FALSE}
+p <- plot_ly(c4, x=~Reads, y=~CompleteA, type="histogram", name="Complete-TransPi",
+             hovertemplate=paste("Number of sample: %{x}", "<br>BUSCO score range: %{y}", "<br>Classification: %{fullData.name}", "<extra></extra>"),
+             marker=list(color='rgba(22, 84, 138,.80)'))
+p <- p %>% add_trace(x=~Reads, y=~CompleteB, type="histogram", name="Complete-Trinity", marker=list(color='rgba(118, 176, 212,.70)'))
+p <- p %>% layout(legend = list(y=.5), xaxis=list(type = "linear", title="Number of samples", tick0 = 0, dtick = 2), yaxis=list(title="BUSCO %", type = "linear", 
+                                                                                                          range=c(0,101), tick0 = 0, dtick = 10, ticklen = 5))
+p
+orca(p,"real_busco_all_histogram_complete.svg")
+
+p <- plot_ly(c4, x=~Reads, y=~SingleA, type="histogram", name="Single-TransPi",
+             hovertemplate=paste("Number of sample: %{x}", "<br>BUSCO score range: %{y}", "<br>Classification: %{fullData.name}", "<extra></extra>"),
+             marker=list(color='rgba(22, 84, 138,.80)'))
+p <- p %>% add_trace(x=~Reads, y=~SingleB, type="histogram", name="Single-Trinity", marker=list(color='rgba(118, 176, 212,.70)'))
+p <- p %>% layout(legend = list(y=.5), xaxis=list(type = "linear", title="Number of samples", tick0 = 0, dtick = 2, range=c(0,23)), yaxis=list(title="BUSCO %", type = "linear",
+                                                                                                          range=c(0,101), tick0 = 0, dtick = 10, ticklen = 5))
+p
+orca(p,"real_busco_all_histogram_single.svg")
+
+p <- plot_ly(c4, x=~Reads, y=~CompleteA, type="histogram", name="Complete-TransPi",
+             hovertemplate=paste("Number of sample: %{x}", "<br>BUSCO score range: %{y}", "<br>Classification: %{fullData.name}", "<extra></extra>"),
+             marker=list(color='rgba(22, 84, 138,.80)'))
+p <- p %>% add_trace(x=~Reads, y=~CompleteB, type="histogram", name="Complete-Trinity", marker=list(color='rgba(118, 176, 212,.70)'))
+
+p <- p %>% add_trace(x=~Reads, y=~SingleA, type="histogram", name="Single-TransPi", marker=list(color='rgba(230, 79, 8,.80)'))
+p <- p %>% add_trace(x=~Reads, y=~SingleB, type="histogram", name="Single-Trinity", marker=list(color='rgba(236, 158, 121,.70)'))
+
+p <- p %>% add_trace(x=~Reads, y=~DuplicatedA, type="histogram", name="Duplicated-TransPi", marker=list(color='rgba(27, 152, 63,.95)'))
+p <- p %>% add_trace(x=~Reads, y=~DuplicatedB, type="histogram", name="Duplicated-Trinity", marker=list(color='rgba(108, 208, 136,.60)'))
+p <- p %>% layout(legend = list(y=.5), xaxis=list(type = "linear", title="Number of samples", tick0 = 0, dtick = 2), yaxis=list(title="BUSCO %", type = "linear",
+                                                                                                          range=c(0,101), tick0 = 0, dtick = 10, ticklen = 5))
+p
+orca(p,"real_busco_all_histogram.svg")
+```
+
+<br><br><br>
+
+<div class="rectangle"></div>
+

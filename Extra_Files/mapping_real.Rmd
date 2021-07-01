@@ -1,0 +1,319 @@
+---
+title: "mapping_real"
+output: html_document
+---
+
+<style>
+.rectangle {
+  height: 37px;
+  width: 105%;
+  background-color: #576675;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+      message = FALSE,
+      warning = FALSE,
+      out.width="100%")
+```
+
+```{r libraries, include=T}
+library(reshape2)
+library(plotly)
+library(dplyr)
+```
+
+```{r data, include=T}
+csv=read.csv("sum_map.csv", header=TRUE)
+csvb=read.csv("sum_map2.csv", header=TRUE)
+```
+
+### Mapping and number of transcripts by sample
+
+```{r plot, echo=FALSE}
+csv2=csv[order(csv$sample),]
+transAxis <- list(
+  tickfont = list(color = "red"),
+  overlaying = "y",
+  side = "right",
+  title = "Number of transcripts",
+  type = "linear"
+)
+p <- plot_ly(csv2, x=~sample, y=~trinity_mapping, type="scatter", mode='markers', boxmean='sd', name="Trinity Mapping", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(y=csv2$transpi_mapping, name="TransPi Mapping", fillcolor='rgba(22, 84, 138,.4)', marker=list(color='rgba(22, 84, 138,.4)'), 
+                    line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% add_trace(y=csv2$trinity_transcripts, name="Trinity Transcripts", fillcolor='rgba(3, 43, 76,.4)', marker=list(color='rgba(3, 43, 76,.4)'), 
+                    line=list(color='rgba(3, 43, 76,.65)'), yaxis="y2")
+p <- p %>% add_trace(y=csv2$transpi_transcript, name="TransPi Transcripts", fillcolor='rgba(122, 84, 138,.4)', marker=list(color='rgba(122, 84, 138,.4)'), 
+                    line=list(color='rgba(122, 84, 138,.65)'), yaxis="y2")
+p <- p %>% layout(yaxis2 = transAxis, legend=list(x=1.1,y=.5), yaxis=list(type = "linear", range=c(0,101), dtick=10, title="Mapping %"), xaxis=list(range=c(0,51), dtick=1, title="", font=list(size=10)))
+p
+```
+
+```{r plot2, eval=FALSE, include=FALSE}
+transAxis <- list(
+  tickfont = list(color = "red"),
+  overlaying = "y",
+  side = "right",
+  title = "Number of transcripts",
+  type = "linear"
+)
+p <- plot_ly(csv2, x=~sample, y=~trinity_mapping, type="scatter", name="Trinity Mapping", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'), yaxis=list(title))
+p <- p %>% add_trace(y=csv2$trinity_transcripts, name="Trinity Transcripts", fillcolor='rgba(3, 43, 76,.4)', marker=list(color='rgba(3, 43, 76,.4)'), 
+                     line=list(color='rgba(3, 43, 76,.65)'), yaxis="y2")
+p <- p %>% add_trace(y=csv2$transpi_mapping, name="TransPi Mapping", fillcolor='rgba(22, 84, 138,.4)', marker=list(color='rgba(22, 84, 138,.4)'), 
+                    line=list(color='rgba(22, 84, 138,.65)'))
+p <- p %>% add_trace(y=csv2$transpi_transcript, name="TransPi Transcripts", fillcolor='rgba(122, 84, 138,.4)', marker=list(color='rgba(122, 84, 138,.4)'), 
+                    line=list(color='rgba(122, 84, 138,.65)'), yaxis="y2")
+p <- p %>% layout(yaxis2 = transAxis, legend=list(x=1.1,y=.5), xaxis=list(range=c(0,50), dtick=1, title="", font=list(size=10)), yaxis=list(title="Mapping %"))
+p
+```
+
+
+```{r plot3, eval=FALSE, include=FALSE}
+p <- plot_ly(csv2, x=~sample, y=~trinity_mapping, type="scatter", name="Trinity Mapping", fillcolor='rgba(118, 176, 212,.4)', 
+             marker=list(color='rgba(118, 176, 212,.4)'), line=list(color='rgba(118, 176, 212,1)'))
+p <- p %>% add_trace(y=csv2$transpi_mapping, name="TransPi Mapping", fillcolor='rgba(22, 84, 138,.4)', marker=list(color='rgba(22, 84, 138,.4)'), 
+                     line=list(color='rgba(22, 84, 138,.65)'))
+p1 <- p %>% layout(yaxis=list(type = "linear", range=c(40,101), dtick=10, title="BUSCO %"), xaxis=list(range=c(0,50), dtick=1, title="", font=list(size=8)), 
+                   legend = list(y=.5))
+p1
+
+p <- plot_ly(csv2, x=~sample, y=csv2$trinity_transcripts, type="scatter", name="Trinity Transcripts", fillcolor='rgba(3, 43, 76,.4)', marker=list(color='rgba(3, 43, 76,.4)'), 
+                     line=list(color='rgba(3, 43, 76,.65)'))
+p <- p %>% add_trace(y=csv2$transpi_transcript, name="TransPi Transcripts", fillcolor='rgba(122, 84, 138,.4)', marker=list(color='rgba(122, 84, 138,.4)'), 
+                     line=list(color='rgba(122, 84, 138,.65)'))
+p2 <- p %>% layout(yaxis=list(type = "linear", title="Number of Transcripts"), xaxis=list(range=c(0,50), dtick=1, title="", font=list(size=8)), legend = list(y=.5))
+p2
+#subplot(p1, p2)
+subplot(p1,p2,nrows = 2, shareX = TRUE)
+```
+
+
+```{r plot4, eval=FALSE, include=FALSE}
+transAxis <- list(
+  tickfont = list(color = "red"),
+  overlaying = "y",
+  side = "right",
+  title = "",
+  type = "linear"
+)
+mapAxis <- list(
+  tickfont = list(color = 'rgba(0, 0, 170,1)'),
+  title=""
+)
+transAxis2 <- list(
+  tickfont = list(color = "red"),
+  overlaying = "y",
+  side = "right",
+  title = "",
+  type = "linear"
+)
+mapAxis2 <- list(
+  tickfont = list(color = 'rgba(0, 0, 170,1)'),
+  title=""
+)
+p <- plot_ly(csv2, x=~sample, y=~trinity_mapping, type="scatter", name="Mapping", fillcolor='rgba(0, 0, 170,.4)', 
+             marker=list(color='rgba(0, 0, 170,.4)'), line=list(color='rgba(0, 0, 170,1)'))
+p <- p %>% add_trace(y=csv2$trinity_transcripts, name="Transcripts", fillcolor='rgba(200, 0, 0,.4)', marker=list(color='rgba(200, 0, 0,.4)'), 
+                     line=list(color='rgba(200, 0, 0,.65)'), yaxis="y2")
+p <- p %>% layout(yaxis=mapAxis)
+p <- p %>% layout(yaxis2 = transAxis, xaxis=list(range=c(0,50), dtick=1, title="", font=list(size=10)))
+p <- p %>% layout(legend=list(y=.5, x=1.10))
+p
+#
+p2 <- plot_ly(csv2, x=~sample, y=~transpi_mapping, type="scatter", name="Mapping", fillcolor='rgba(0, 0, 170,.4)', 
+             marker=list(color='rgba(0, 0, 170,.4)'), line=list(color='rgba(0, 0, 170,1)'))
+p2 <- p2 %>% add_trace(y=csv2$transpi_transcript, name="Transcripts", fillcolor='rgba(200, 0, 0,.4)', marker=list(color='rgba(200, 0, 0,.4)'), 
+                     line=list(color='rgba(200, 0, 0,.65)'), yaxis="y2")
+p2 <- p2 %>% layout(yaxis=mapAxis)
+p2 <- p2 %>% layout(yaxis2 = transAxis, xaxis=list(range=c(0,50), dtick=1, title="", font=list(size=10)))
+p2 <- p2 %>% layout(legend=list(y=.5, x=1.10))
+p2
+subplot(p,p2,nrows = 2, shareX = TRUE, shareY = FALSE)
+```
+
+
+```{r plot5, eval=FALSE, include=FALSE}
+p <- plot_ly(csv2, x=~sample, y=~trinity_mapping, type="scatter", name="Mapping - Trinity", fillcolor='rgba(0, 0, 170,.4)', 
+             marker=list(color='rgba(0, 0, 170,.4)'), line=list(color='rgba(0, 0, 170,1)'))
+
+p <- p %>% add_trace(y=csv2$trinity_transcripts, name="Transcripts - Trinity", fillcolor='rgba(200, 0, 0,.4)', marker=list(color='rgba(200, 0, 0,.4)'), 
+                     line=list(color='rgba(200, 0, 0,.65)'), yaxis="y2")
+
+p <- p %>% add_trace(y=csv2$transpi_mapping, name="Mapping - TransPi", fillcolor='rgba(0, 100, 0,.4)', marker=list(color='rgba(0, 100, 0,.4)'), 
+                     line=list(color='rgba(0, 100, 0,.65)'))
+
+p <- p %>% add_trace(y=csv2$transpi_transcript, name="Transcripts - TransPi", fillcolor='rgba(200, 100, 0,.4)', marker=list(color='rgba(200, 100, 0,.4)'), 
+                     line=list(color='rgba(200, 100, 0,.65)'), yaxis="y2")
+
+
+p <- p %>% layout(yaxis=mapAxis)
+p <- p %>% layout(yaxis2 = transAxis, xaxis=list(range=c(0,50), dtick=1, title="", font=list(size=10)))
+p <- p %>% layout(legend=list(y=.5, x=1.10))
+p
+```
+
+<br><br>
+
+### Mapping, number of transcripts and BUSCO (complete and single) by sample
+
+```{r plot6, echo=FALSE}
+#with busco
+csv2=csvb[order(csvb$sample),]
+mapAxis <- list(
+  tickfont = list(color = 'rgba(0, 0, 170,1)'),
+  title=""
+)
+p <- plot_ly(csvb, x=~sample, y=~trinity_mapping, type="scatter", mode='markers', name="Mapping-Trinity", fillcolor='rgba(0, 0, 170,.4)', 
+             marker=list(color='rgba(0, 0, 170,.4)'), line=list(color='rgba(0, 0, 170,1)'))
+
+p <- p %>% add_trace(y=csv2$trinity_transcripts, name="Transcripts-Trinity", fillcolor='rgba(200, 0, 0,.4)', marker=list(color='rgba(200, 0, 0,.4)'), 
+                     line=list(color='rgba(200, 0, 0,.65)'), yaxis="y2")
+
+p <- p %>% add_trace(y=csv2$trinity_busco_comp, name="BUSCO-C-Trinity", fillcolor='rgba(200, 80, 100,.4)', marker=list(color='rgba(200, 80, 100,.4)'), 
+                     line=list(color='rgba(200, 80, 100,.65)'))
+
+p <- p %>% add_trace(y=csv2$trinity_busco_sing, name="BUSCO-S-Trinity", fillcolor='rgba(200, 0, 100,.4)', marker=list(color='rgba(200, 0, 100,.4)'), 
+                     line=list(color='rgba(200, 0, 100,.65)'))
+
+p <- p %>% add_trace(y=csv2$transpi_mapping, name="Mapping-TransPi", fillcolor='rgba(0, 100, 0,.4)', marker=list(color='rgba(0, 100, 0,.4)'), 
+                     line=list(color='rgba(0, 100, 0,.65)'))
+
+p <- p %>% add_trace(y=csv2$transpi_transcript, name="Transcripts-TransPi", fillcolor='rgba(200, 100, 0,.4)', marker=list(color='rgba(200, 100, 0,.4)'), 
+                     line=list(color='rgba(200, 100, 0,.65)'), yaxis="y2")
+
+p <- p %>% add_trace(y=csv2$transpi_busco_comp, name="BUSCO-C-TransPi", fillcolor='rgba(200, 80, 100,.4)', marker=list(color='rgba(200, 80, 100,.4)'), 
+                     line=list(color='rgba(200, 80, 100,.65)'))
+
+p <- p %>% add_trace(y=csv2$transpi_busco_sing, name="BUSCO-S-TransPi", fillcolor='rgba(200, 100, 100,.4)', marker=list(color='rgba(200, 100, 100,.4)'), 
+                     line=list(color='rgba(200, 100, 100,.65)'))
+
+p <- p %>% layout(yaxis=mapAxis)
+p <- p %>% layout(yaxis2 = transAxis, xaxis=list(range=c(0,50), dtick=1, title="", font=list(size=10)))
+p <- p %>% layout(legend=list(y=.5, x=1.10))
+p
+```
+
+<br><br>
+
+### Bar plot of mapping % and BUSCO (complete and single) by sample
+
+```{r plot7, echo=FALSE}
+#subplot(p,p2, nrows = 2,  shareX = FALSE, shareY = FALSE)
+plotList <- function(nplots) {
+  lapply(seq_len(nplots), function(x) plot_ly())
+}
+s1 <- subplot(plotList(6), nrows = 2, shareX = TRUE, shareY = TRUE)
+s2 <- subplot(plotList(2), shareY = TRUE)
+fig <- subplot(s1, s2, plot_ly(), nrows = 3, margin = 0.04, heights = c(0.6, 0.3, 0.1))
+#fig
+
+#
+csv2=csvb[order(csvb$sample),]
+mapAxis <- list(
+  tickfont = list(color = 'rgba(0, 0, 0,1)'),
+  title="Percentage %",
+  type = "linear",
+  font=list(size=8)
+)
+sampleAxis <- list(
+  range=c(0,50), 
+  dtick=1,
+  title="", 
+  font=list(size=8)
+)
+p <- plot_ly(csv2, x=~sample, y=~trinity_mapping, type="bar", name="Mapping-Trinity", marker=list(color='rgba(0, 0, 170,.4)'))
+p <- p %>% layout(yaxis=mapAxis, xaxis=sampleAxis)
+#p1 <- plot_ly(csv2, x=~sample, y=~trinity_transcripts, type="bar", name="Transcripts-Trinity", marker=list(color='rgba(0, 100, 100,.4)'), yaxis="y2")
+#p1
+
+p2 <- plot_ly(csv2, x=~sample, y=~trinity_busco_comp, type="bar", name="BUSCO-C-Trinity", marker=list(color='rgba(200, 80, 100,.4)'))
+p2 <- p2 %>% layout(yaxis=mapAxis, xaxis=sampleAxis)
+
+p3 <- plot_ly(csv2, x=~sample, y=~trinity_busco_sing, type="bar", name="BUSCO-S-Trinity", marker=list(color='rgba(200, 100, 0,.4)'))
+p3 <- p3 %>% layout(yaxis=mapAxis, xaxis=sampleAxis)
+
+p4 <- plot_ly(csv2, x=~sample, y=~transpi_mapping, type="bar", name="Mapping-TransPi", marker=list(color='rgba(0, 0, 170,.8)'))
+p4 <- p4 %>% layout(yaxis=mapAxis, xaxis=sampleAxis)
+
+#p5 <- plot_ly(csv2, x=~sample, y=~transpi_transcript, type="bar", name="Transcripts-TransPi", marker=list(color='rgba(200, 100, 0,.4)'), yaxis="y2")
+
+p6 <- plot_ly(csv2, x=~sample, y=~transpi_busco_comp, type="bar", name="BUSCO-C-TransPi", marker=list(color='rgba(200, 80, 100,.8)'))
+p6 <- p6 %>% layout(yaxis=mapAxis, xaxis=sampleAxis)
+
+p7 <- plot_ly(csv2, x=~sample, y=~transpi_busco_sing, type="bar", name="BUSCO-S-TransPi", marker=list(color='rgba(200, 100, 0,.8)'))
+p7 <- p7 %>% layout(yaxis=mapAxis, xaxis=sampleAxis)
+
+s1 <- subplot(p,p2,p3,p4,p6,p7, nrows = 2, shareX = TRUE, shareY = TRUE, margin = .005, heights = c(0.5, 0.5))
+s1 <- s1 %>% layout(legend=list(y=.5, x=1.10, font=list(size=12)))
+s1
+#orca(s1,"mapping_plot.svg")
+
+n=0
+for(x in csv2$trinity_mapping) {
+  if (x>80) {
+    n=n+1
+  }
+}
+#color='#088da5'
+```
+
+<br><br>
+
+### Histograms of mapping % and BUSCO (complete and single)
+
+```{r plot8, echo=FALSE}
+tlp <- plot_ly(csv2, x=~trinity_mapping, type="histogram", xbins=list(start='0',end='100', size= '10'),  name="Mapping-Trinity",  marker=list(color='rgba(0, 0, 170,.4)', line=list(color = 'black',
+               width = .5)), hovertemplate = paste('Percent range: %{x}','<br>Number of samples: %{y}','<extra></extra>'), opacity = 0.7)
+tlp <- tlp %>% layout(xaxis=list(title = "Percentage", range=c(0,100), dtick=10, type='lineal'))
+tlp <- tlp %>% layout(yaxis = list(title = "Number of samples", range=c(0,25), dtick=5, type='lineal'))
+tlp
+
+tlp2 <- plot_ly(csv2, x=~trinity_busco_comp, type="histogram", xbins=list(start='0',end='100', size= '10'), name="BUSCO-C-Trinity", marker=list(color='rgba(200, 80, 100,.4)', line=list(color = 'black',
+               width =.5)), hovertemplate = paste('Percent range: %{x}','<br>Number of samples: %{y}','<extra></extra>'), opacity = 0.7)
+tlp2 <- tlp2 %>% layout(xaxis=list(title = "Percentage", range=c(0,100), dtick=10, type='lineal'))
+tlp2 <- tlp2 %>% layout(yaxis = list(title = "Number of samples", range=c(0,25), dtick=5, type='lineal'))
+tlp2
+
+tlp3 <- plot_ly(csv2, x=~trinity_busco_sing, type="histogram", xbins=list(start='0',end='100', size= '10'), name="BUSCO-S-Trinity", marker=list(color='rgba(200, 100, 0,.4)', line=list(color = 'black',
+               width = .5)), hovertemplate = paste('Percent range: %{x}','<br>Number of samples: %{y}','<extra></extra>'), opacity = 0.7)
+tlp3 <- tlp3 %>% layout(xaxis=list(title = "Percentage", range=c(0,100), dtick=10, type='lineal'))
+tlp3 <- tlp3 %>% layout(yaxis = list(title = "Number of samples", range=c(0,25), dtick=5, type='lineal'))
+tlp3
+
+tlp4 <- plot_ly(csv2, x=~transpi_mapping, type="histogram", xbins=list(start='0',end='100', size= '10'), name="Mapping-TransPi", marker=list(color='rgba(0, 0, 170,.8)', line=list(color = 'black',
+               width = 1)), hovertemplate = paste('Percent range: %{x}','<br>Number of samples: %{y}','<extra></extra>'), opacity = 0.7)
+tlp4 <- tlp4 %>% layout(xaxis=list(title = "Percentage", range=c(0,100), dtick=10, type='lineal'))
+tlp4 <- tlp4 %>% layout(yaxis = list(title = "Number of samples", range=c(0,25), dtick=5, type='lineal'))
+tlp4
+
+tlp5 <- plot_ly(csv2, x=~transpi_busco_comp, type="histogram", xbins=list(start='0',end='100', size= '10'), name="BUSCO-C-TransPi", marker=list(color='rgba(200, 80, 100,.8)', line=list(color = 'black',
+               width = 1)), hovertemplate = paste('Percent range: %{x}','<br>Number of samples: %{y}','<extra></extra>'), opacity = 0.7)
+tlp5 <- tlp5 %>% layout(xaxis=list(title = "Percentage", range=c(0,100), dtick=10, type='lineal'))
+tlp5 <- tlp5 %>% layout(yaxis = list(title = "Number of samples", range=c(0,25), dtick=5, type='lineal'))
+tlp5
+
+tlp6 <- plot_ly(csv2, x=~transpi_busco_sing, type="histogram", xbins=list(start='0',end='100', size= '10'), name="BUSCO-S-TransPi", marker=list(color='rgba(200, 100, 0,.8)', line=list(color = 'black',
+               width = 1)), hovertemplate = paste('Percent range: %{x}','<br>Number of samples: %{y}','<extra></extra>'), opacity = 0.7)
+tlp6 <- tlp6 %>% layout(xaxis=list(title = "Percentage", range=c(0,100), dtick=10, type='lineal'))
+tlp6 <- tlp6 %>% layout(yaxis = list(title = "Number of samples", range=c(0,25), dtick=5, type='lineal'))
+tlp6
+
+s2 <- subplot(tlp,tlp2,tlp3,tlp4,tlp5,tlp6, nrows = 2, shareX = TRUE, shareY = TRUE, margin = .015, heights = c(0.5, 0.5))
+s2 <- s2 %>% layout(legend=list(y=.5, x=1.02, font=list(size=12)), xaxis=list(font=list(size=6)))
+s2
+#orca(s2,"mapping_plot_hist.svg")
+#a=csv2$trinity_busco_sing
+#a=as.numeric(gsub("[\\%,]", "", csv2$trinity_busco_sing))
+#b=csv2$transpi_busco_sing
+#b=as.numeric(gsub("[\\%,]", "", csv2$transpi_busco_sing))
+#a
+#b
+#t.test(a, b, alternative = "greater", var.equal = FALSE)
+```
+
+<br><br><br>
