@@ -1,4 +1,4 @@
-# TransPi Paper Data
+# TransPi data
 This repository contains the data used in the paper of TransPi
 
 - Paper Tables
